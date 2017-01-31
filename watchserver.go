@@ -41,10 +41,11 @@ func main() {
 
 	api.Logger.Println("watchserver " + VERSION + ": starting")
 
-	for true {
-		api.DoSomething()
-		plugins.DockerFailover()
-		time.Sleep(time.Duration(api.EnvVars.SLEEP_TIME) * time.Second)
-	}
+	//for true {
+	api.DoSomething()
+	plugins.DockerFailover()
+	api.Logger.Printf("sleeping for %d\n", api.EnvVars.SLEEP_TIME)
+	time.Sleep(time.Duration(api.EnvVars.SLEEP_TIME) * time.Second)
+	//}
 
 }
