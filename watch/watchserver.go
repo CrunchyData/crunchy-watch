@@ -28,7 +28,9 @@ var logger *log.Logger
 
 func main() {
 	logger = log.New(os.Stdout, "logger: ", log.Lshortfile|log.Ldate|log.Ltime)
-	var VERSION = os.Getenv("VERSION")
+	watchapi.GetEnv()
+
+	var VERSION = os.Getenv("CCP_VERSION")
 
 	logger.Println("watchserver " + VERSION + ": starting")
 
