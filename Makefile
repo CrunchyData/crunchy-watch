@@ -9,6 +9,8 @@ versiontest:
 	if test -z "$$CCP_VERSION"; then echo "CCP_VERSION undefined"; exit 1;fi;
 clean:
 	rm $(GOPATH)/bin/watchserver
+build:
+	godep go install watchserver.go
 gendeps:
 	godep save \
 	github.com/crunchydata/crunchy-watch/watchapi 
