@@ -19,6 +19,8 @@ import (
 	"github.com/crunchydata/crunchy-watch/watchapi"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -27,6 +29,15 @@ var POLL_INT = int64(3)
 var logger *log.Logger
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigs
+		log.Println(sig)
+		log.Println("caught signal, cleaning up and exiting...")
+		os.Exit(0)
+	}()
+
 	logger = log.New(os.Stdout, "logger: ", log.Lshortfile|log.Ldate|log.Ltime)
 	watchapi.GetEnv()
 
@@ -36,7 +47,7 @@ func main() {
 
 	for true {
 		watchapi.DoSomething()
-		time.Sleep(time.Duration(POLL_INT) * time.Minute)
+		time.Sleep(time.Duration(watchapi.EnvVars.SLEEP_TIME) * time.Second)
 	}
 
 }
