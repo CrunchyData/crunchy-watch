@@ -1,0 +1,9 @@
+{
+	"ImportPath": "github.com/crunchydata/crunchy-watch",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
+	"Packages": [
+		"github.com/crunchydata/crunchy-watch/watchapi"
+	],
+	"Deps": []
+}
