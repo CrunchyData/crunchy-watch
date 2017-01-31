@@ -13,17 +13,28 @@
  limitations under the License.
 */
 
-package dbaapi
+package main
 
 import (
+	"github.com/crunchydata/crunchy-watch/watchapi"
 	"log"
+	"os"
+	"time"
 )
 
-func Something(logger *log.Logger) error {
-	var err error
-	logger.Println("Something")
-	if false {
-		return err
+var POLL_INT = int64(3)
+
+var logger *log.Logger
+
+func main() {
+	logger = log.New(os.Stdout, "logger: ", log.Lshortfile|log.Ldate|log.Ltime)
+	var VERSION = os.Getenv("VERSION")
+
+	logger.Println("watchserver " + VERSION + ": starting")
+
+	for true {
+		watchapi.DoSomething()
+		time.Sleep(time.Duration(POLL_INT) * time.Minute)
 	}
-	return err
+
 }

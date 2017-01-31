@@ -1,12 +1,12 @@
 
 default:
-		godep go install dbaserver.go
+		godep go install watchserver.go
 
 gendeps:
 		godep save  \
-		github.com/crunchydata/crunchy-containers/dbaapi
+		github.com/crunchydata/crunchy-watch/watchapi
 
 clean:
-		rm -rf $(GOBIN)/dbaserver
+		rm -rf $(GOBIN)/watchserver
 
 
