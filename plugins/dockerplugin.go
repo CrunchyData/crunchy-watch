@@ -20,5 +20,8 @@ import (
 )
 
 func DockerFailover() {
-	api.Logger.Println("in DockerFailover")
+	api.Logger.Println("docker failover begins....")
+	api.Logger.Println("creating the trigger file on " + api.EnvVars.PG_MASTER_SERVICE)
+	//docker exec $PG_SLAVE_SERVICE touch /tmp/pg-failover-trigger
+	api.Logger.Println("docker failover ends....")
 }
