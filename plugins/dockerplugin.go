@@ -17,11 +17,28 @@ package plugins
 
 import (
 	api "github.com/crunchydata/crunchy-watch/watchapi"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"golang.org/x/net/context"
 )
 
 func DockerFailover() {
 	api.Logger.Println("docker failover begins....")
 	api.Logger.Println("creating the trigger file on " + api.EnvVars.PG_MASTER_SERVICE)
 	//docker exec $PG_SLAVE_SERVICE touch /tmp/pg-failover-trigger
+
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		panic(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, container := range containers {
+		api.Logger.Printf("%s %s\n", container.ID[:10], container.Image)
+	}
 	api.Logger.Println("docker failover ends....")
 }

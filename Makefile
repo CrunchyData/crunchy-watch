@@ -13,7 +13,8 @@ build:
 	godep go install watchserver.go
 gendeps:
 	godep save \
-	github.com/crunchydata/crunchy-watch/watchapi 
+	github.com/crunchydata/crunchy-watch/watchapi \
+	github.com/crunchydata/crunchy-watch/plugins 
 
 docbuild:
 	cd docs && ./build-docs.sh
