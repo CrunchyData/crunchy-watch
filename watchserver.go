@@ -42,19 +42,19 @@ func main() {
 	api.Logger.Println("watchserver " + VERSION + ": starting")
 
 	for true {
-		api.DoSomething()
-
-		switch api.EnvVars.PROJECT_TYPE {
-		case "docker":
-			plugins.DockerFailover()
-			api.Logger.Println("docker failover exits normally")
-			os.Exit(0)
-		case "kube":
-			plugins.KubeFailover()
-		case "openshift":
-			plugins.OpenshiftFailover()
-		default:
-			api.Logger.Println(api.EnvVars.PROJECT_TYPE + " handling not implemented")
+		if api.HealthCheck() == false {
+			switch api.EnvVars.PROJECT_TYPE {
+			case "docker":
+				plugins.DockerFailover()
+				api.Logger.Println("docker failover exits normally")
+				os.Exit(0)
+			case "kube":
+				plugins.KubeFailover()
+			case "openshift":
+				plugins.OpenshiftFailover()
+			default:
+				api.Logger.Println(api.EnvVars.PROJECT_TYPE + " handling not implemented")
+			}
 		}
 		api.Logger.Printf("sleeping for %d\n", api.EnvVars.SLEEP_TIME)
 		time.Sleep(time.Duration(api.EnvVars.SLEEP_TIME) * time.Second)

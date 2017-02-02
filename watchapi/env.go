@@ -30,6 +30,8 @@ type Env struct {
 	PG_MASTER_PORT string
 	//required, defaults to master
 	PG_MASTER_USER string
+	//required
+	PG_MASTER_PASSWORD string
 	//defaults to postgres
 	PG_DATABASE string
 	//optional, used for kube and openshift
@@ -143,5 +145,12 @@ func GetEnv() {
 		}
 	}
 	Logger.Printf("WAIT_TIME is %d\n", EnvVars.WAIT_TIME)
+	str = os.Getenv("PG_MASTER_PASSWORD")
+	if str != "" {
+		EnvVars.PG_MASTER_PASSWORD = str
+	} else {
+		log.Println("PG_MASTER_PASSWORD is required")
+		os.Exit(2)
+	}
 
 }

@@ -1,9 +1,10 @@
 #!/bin/bash
-export PROJECT_TYPE=kube
+export PROJECT_TYPE=docker
 export PG_MASTER_SERVICE=master
 export PG_SLAVE_SERVICE=replica
 export PG_MASTER_PORT=5432
-export PG_MASTER_USER=master
+export PG_MASTER_USER=postgres
+export PG_MASTER_PASSWORD=password
 export PG_DATABASE=postgres
 export SLAVE_TO_TRIGGER_LABEL=
 export SLEEP_TIME=10

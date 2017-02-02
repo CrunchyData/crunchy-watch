@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/crunchydata/crunchy-watch",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v78",
+	"GodepVersion": "v79",
 	"Packages": [
 		"github.com/crunchydata/crunchy-watch/watchapi",
 		"github.com/crunchydata/crunchy-watch/plugins"
@@ -131,6 +131,16 @@
 			"ImportPath": "github.com/docker/go-units",
 			"Comment": "v0.3.1-12-g0dadbb0",
 			"Rev": "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-145-ga6657b2",
+			"Rev": "a6657b2386e9b8be76484c08711b02c7cf867ead"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-145-ga6657b2",
+			"Rev": "a6657b2386e9b8be76484c08711b02c7cf867ead"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/go-digest",
