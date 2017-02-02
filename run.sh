@@ -1,5 +1,5 @@
 #!/bin/bash
-export PROJECT_TYPE=docker
+export PROJECT_TYPE=kube
 export PG_MASTER_SERVICE=master
 export PG_SLAVE_SERVICE=replica
 export PG_MASTER_PORT=5432

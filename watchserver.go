@@ -50,9 +50,9 @@ func main() {
 			api.Logger.Println("docker failover exits normally")
 			os.Exit(0)
 		case "kube":
-			plugins.DockerFailover()
+			plugins.KubeFailover()
 		case "openshift":
-			plugins.DockerFailover()
+			plugins.OpenshiftFailover()
 		default:
 			api.Logger.Println(api.EnvVars.PROJECT_TYPE + " handling not implemented")
 		}
