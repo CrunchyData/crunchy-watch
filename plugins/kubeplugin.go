@@ -27,7 +27,7 @@ func KubeFailover() {
 	//get slaves
 	//TRIGGERSLAVES=`kubectl get pod --selector=name=$PG_SLAVE_SERVICE --selector=slavetype=trigger --no-headers | cut -f1 -d' '`
 	var cmd *exec.Cmd
-	cmd = exec.Command("kubectl", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--selector=slavetype=trigger", "--no-headers")
+	cmd = exec.Command("kubectl", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--no-headers")
 
 	var out bytes.Buffer
 	var stderr bytes.Buffer
