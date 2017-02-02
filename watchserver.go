@@ -55,6 +55,8 @@ func main() {
 			default:
 				api.Logger.Println(api.EnvVars.PROJECT_TYPE + " handling not implemented")
 			}
+		} else {
+			api.Logger.Println("master is responding...")
 		}
 		api.Logger.Printf("sleeping for %d\n", api.EnvVars.SLEEP_TIME)
 		time.Sleep(time.Duration(api.EnvVars.SLEEP_TIME) * time.Second)
