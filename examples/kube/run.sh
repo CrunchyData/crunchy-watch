@@ -1,6 +1,5 @@
-#!/bin/bash  -x
-
-# Copyright 2015 Crunchy Data Solutions, Inc.
+#!/bin/bash
+# Copyright 2016 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function trap_sigterm() {
-	echo "doing trap logic..."  >> /tmp/trap.out
-}
+source $BUILDBASE/examples/envvars.sh
 
-trap 'trap_sigterm' SIGINT SIGTERM
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-export PATH=$PATH:/opt/cpm/bin
+$DIR/cleanup.sh
 
-watchserver &
-
-# this loop is for debugging only
-while true; do 
-	sleep 10
-done
-
-wait
+kubectl create -f $DIR/watch-sa.json
+#kubectl.sh policy add-role-to-group edit system:serviceaccounts -n openshift
+#kubectl.sh policy add-role-to-group edit system:serviceaccounts -n default
+envsubst < $DIR/watch-pod.json | kubectl create -f -

@@ -1,6 +1,6 @@
-#!/bin/bash  -x
+#!/bin/bash
 
-# Copyright 2015 Crunchy Data Solutions, Inc.
+# Copyright 2016 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,19 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function trap_sigterm() {
-	echo "doing trap logic..."  >> /tmp/trap.out
-}
+#
+# wait for a pod to terminate
+#
 
-trap 'trap_sigterm' SIGINT SIGTERM
+echo "waiting on " $1
+POD=$1
+CMD=$2
 
-export PATH=$PATH:/opt/cpm/bin
-
-watchserver &
-
-# this loop is for debugging only
-while true; do 
-	sleep 10
+while true; do
+	$CMD get pod $POD > /dev/null
+	rc=$?
+#	echo $rc " is the rc"
+	if   [ $rc -ne 0 ]; then
+		echo "dead " $?
+		break
+	fi
+	if  [ $rc -eq 0 ]; then
+		echo -n "."
+	fi
+	sleep 1
 done
-
-wait

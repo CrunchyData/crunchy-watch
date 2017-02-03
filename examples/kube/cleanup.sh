@@ -1,6 +1,5 @@
-#!/bin/bash  -x
-
-# Copyright 2015 Crunchy Data Solutions, Inc.
+#!/bin/bash
+# Copyright 2016 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,19 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function trap_sigterm() {
-	echo "doing trap logic..."  >> /tmp/trap.out
-}
-
-trap 'trap_sigterm' SIGINT SIGTERM
-
-export PATH=$PATH:/opt/cpm/bin
-
-watchserver &
-
-# this loop is for debugging only
-while true; do 
-	sleep 10
-done
-
-wait
+kubectl delete pod watch
+kubectl delete serviceaccount pg-watcher
+$BUILDBASE/examples/waitforterm.sh watch kubectl

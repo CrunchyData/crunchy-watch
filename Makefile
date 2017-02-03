@@ -21,6 +21,7 @@ docbuild:
 watchserver:
 	cp `which oc` bin/watch
 	cp `which kubectl` bin/watch
+	cp $(GOPATH)/bin/watchserver bin/watch
 	docker build -t crunchy-watch -f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.watch.$(CCP_BASEOS) .
 	docker tag crunchy-watch crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
 version:
