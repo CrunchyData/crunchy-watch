@@ -41,10 +41,12 @@ type Env struct {
 	//required, defaults to 50 seconds
 	WAIT_TIME    int
 	PROJECT_TYPE string
+	//required for openshift
+	NAMESPACE string
 }
 
 const DOCKER_PROJECT = "docker"
-const OSE_PROJECT = "ose"
+const OSE_PROJECT = "openshift"
 const KUBE_PROJECT = "kube"
 
 var EnvVars Env
@@ -70,19 +72,14 @@ func GetEnv() {
 		EnvVars.PROJECT_TYPE = str
 	}
 
-	//for backward compat
-	str = os.Getenv("KUBE_PROJECT")
-	if str != "" {
-		EnvVars.PROJECT_TYPE = KUBE_PROJECT
-	} else {
-		str = os.Getenv("OSE_PROJECT")
+	if str == OSE_PROJECT {
+		str = os.Getenv("NAMESPACE")
 		if str != "" {
-			EnvVars.PROJECT_TYPE = OSE_PROJECT
+			EnvVars.NAMESPACE = str
+			Logger.Printf("NAMESPACE is %s\n", EnvVars.NAMESPACE)
 		} else {
-			str = os.Getenv("DOCKER_PROJECT")
-			if str != "" {
-				EnvVars.PROJECT_TYPE = DOCKER_PROJECT
-			}
+			log.Println("NAMESPACE is not supplied and is required for openshift projects")
+			os.Exit(2)
 		}
 	}
 	Logger.Println("PROJECT_TYPE set to " + EnvVars.PROJECT_TYPE)
