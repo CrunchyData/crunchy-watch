@@ -52,6 +52,8 @@ func main() {
 				plugins.KubeFailover()
 			case "openshift":
 				plugins.OpenshiftFailover()
+			case "cf":
+				plugins.CloudFoundryFailover()
 			default:
 				api.Logger.Println(api.EnvVars.PROJECT_TYPE + " handling not implemented")
 			}
