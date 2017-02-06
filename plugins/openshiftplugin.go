@@ -32,7 +32,7 @@ func OpenshiftFailover() {
 	var err error
 
 	api.Logger.Println("setting project to " + api.EnvVars.NAMESPACE)
-	cmd = exec.Command("oc", "project", api.EnvVars.NAMESPACE)
+	cmd = exec.Command("/opt/cpm/bin/oc", "project", api.EnvVars.NAMESPACE)
 
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -44,7 +44,7 @@ func OpenshiftFailover() {
 	}
 	api.Logger.Println("oc project output..." + out.String())
 
-	cmd2 = exec.Command("oc", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--no-headers")
+	cmd2 = exec.Command("/opt/cpm/bin/oc", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--no-headers")
 
 	cmd2.Stdout = &out2
 	cmd2.Stderr = &stderr2
@@ -81,7 +81,7 @@ func OpenshiftFailover() {
 	api.Logger.Println("creating the trigger file on " + failoverTarget)
 	api.Logger.Println("targetSlave is " + failoverTarget)
 
-	cmd3 = exec.Command("oc", "exec", failoverTarget, "touch", "/tmp/pg-failover-trigger")
+	cmd3 = exec.Command("/opt/cpm/bin/oc", "exec", failoverTarget, "touch", "/tmp/pg-failover-trigger")
 
 	cmd3.Stdout = &out3
 	cmd3.Stderr = &stderr3
@@ -97,7 +97,7 @@ func OpenshiftFailover() {
 	time.Sleep(time.Duration(api.EnvVars.WAIT_TIME) * time.Second)
 	api.Logger.Println("changing label of slave to " + api.EnvVars.PG_MASTER_SERVICE)
 	//oc label --overwrite=true pod $i name=$PG_MASTER_SERVICE
-	cmd4 = exec.Command("oc", "label", "--overwrite=true", "pod", failoverTarget, "name="+api.EnvVars.PG_MASTER_SERVICE)
+	cmd4 = exec.Command("/opt/cpm/bin/oc", "label", "--overwrite=true", "pod", failoverTarget, "name="+api.EnvVars.PG_MASTER_SERVICE)
 
 	cmd4.Stdout = &out4
 	cmd4.Stderr = &stderr4
@@ -111,7 +111,7 @@ func OpenshiftFailover() {
 	api.Logger.Println("deleting all other replica pods...")
 	for _, pod := range allPods {
 		if pod != failoverTarget {
-			cmd5 = exec.Command("oc", "delete", "pod", pod)
+			cmd5 = exec.Command("/opt/cpm/bin/oc", "delete", "pod", pod)
 			cmd5.Stdout = &out5
 			cmd5.Stderr = &stderr5
 			err = cmd5.Run()

@@ -27,7 +27,7 @@ func KubeFailover() {
 	api.Logger.Println("kube failover begins....")
 	//get slaves
 	var cmd *exec.Cmd
-	cmd = exec.Command("kubectl", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--no-headers")
+	cmd = exec.Command("/opt/cpm/bin/kubectl", "get", "pod", "--selector=name="+api.EnvVars.PG_SLAVE_SERVICE, "--no-headers")
 
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -66,7 +66,7 @@ func KubeFailover() {
 	api.Logger.Println("creating the trigger file on " + failoverTarget)
 	api.Logger.Println("targetSlave is " + failoverTarget)
 
-	cmd = exec.Command("kubectl", "exec", failoverTarget, "touch", "/tmp/pg-failover-trigger")
+	cmd = exec.Command("/opt/cpm/bin/kubectl", "exec", failoverTarget, "touch", "/tmp/pg-failover-trigger")
 
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -82,7 +82,7 @@ func KubeFailover() {
 	time.Sleep(time.Duration(api.EnvVars.WAIT_TIME) * time.Second)
 	api.Logger.Println("changing label of slave to " + api.EnvVars.PG_MASTER_SERVICE)
 	//kubectl label --overwrite=true pod $i name=$PG_MASTER_SERVICE
-	cmd = exec.Command("kubectl", "label", "--overwrite=true", "pod", failoverTarget, "name="+api.EnvVars.PG_MASTER_SERVICE)
+	cmd = exec.Command("/opt/cpm/bin/kubectl", "label", "--overwrite=true", "pod", failoverTarget, "name="+api.EnvVars.PG_MASTER_SERVICE)
 
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
@@ -96,7 +96,7 @@ func KubeFailover() {
 	api.Logger.Println("deleting all other replica pods...")
 	for _, pod := range allPods {
 		if pod != failoverTarget {
-			cmd = exec.Command("kubectl", "delete", "pod", pod)
+			cmd = exec.Command("/opt/cpm/bin/kubectl", "delete", "pod", pod)
 			cmd.Stdout = &out
 			cmd.Stderr = &stderr
 			err = cmd.Run()
