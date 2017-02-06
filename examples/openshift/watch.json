@@ -1,0 +1,65 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "pg-replica-example",
+        "creationTimestamp": null,
+        "annotations": {
+            "description": "PostgreSQL Replication Example",
+            "iconClass": "icon-database",
+            "tags": "database,postgresql,replication"
+        }
+    },
+    "parameters": [{
+        "name": "CCP_IMAGE_TAG",
+        "description": "the image tag to use"
+    }],
+    "objects": [{
+        "kind": "Pod",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "watch",
+            "labels": {
+                "name": "watch"
+            }
+        },
+        "spec": {
+            "serviceAccount": "pg-watcher",
+            "containers": [{
+                "name": "watch",
+                "image": "crunchydata/crunchy-watch:${CCP_IMAGE_TAG}",
+                "env": [{
+                    "name": "NAMESPACE",
+                    "value": "crunchy"
+                }, {
+                    "name": "SLEEP_TIME",
+                    "value": "20"
+                }, {
+                    "name": "PROJECT_TYPE",
+                    "value": "openshift"
+                }, {
+                    "name": "PG_MASTER_SERVICE",
+                    "value": "master-dc"
+                }, {
+                    "name": "PG_SLAVE_SERVICE",
+                    "value": "replica-dc"
+                }, {
+                    "name": "PG_MASTER_PORT",
+                    "value": "5432"
+                }, {
+                    "name": "HOME",
+                    "value": "/tmp"
+                }, {
+                    "name": "PG_MASTER_USER",
+                    "value": "postgres"
+                }, {
+                    "name": "PG_MASTER_PASSWORD",
+                    "value": "password"
+                }, {
+                    "name": "PG_DATABASE",
+                    "value": "postgres"
+                }]
+            }]
+        }
+    }]
+}
