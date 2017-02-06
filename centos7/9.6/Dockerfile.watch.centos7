@@ -22,8 +22,8 @@ RUN mkdir -p /opt/cpm/bin /opt/cpm/conf
 ADD bin/watch /opt/cpm/bin
 ADD conf/watch /opt/cpm/conf
 
-RUN chown -R daemon:daemon /opt/cpm 
+RUN chown -R root:root /opt/cpm 
 
-USER daemon
+USER root
 
 ENTRYPOINT ["/opt/cpm/bin/watchserver"]
