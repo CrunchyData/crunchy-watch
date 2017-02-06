@@ -27,4 +27,4 @@ RUN chown -R daemon:daemon /opt/cpm
 
 USER daemon
 
-CMD ["/opt/cpm/bin/start.sh"]
+ENTRYPOINT ["/opt/cpm/bin/watchserver"]
