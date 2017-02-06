@@ -49,7 +49,7 @@ func DockerFailover() {
 	startConfig := types.ExecStartCheck{}
 	execConfig := types.ExecConfig{}
 
-	x := []string{"touch", "/tmp/foo"}
+	x := []string{"touch", "/tmp/pg-failover-trigger"}
 	execConfig.Cmd = x
 	execConfig.AttachStdout = true
 

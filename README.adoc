@@ -32,12 +32,29 @@ On an EL7 system, docker can be installed with the following commands:
 
 2) Building the Container (Optional)
 
-If you don't want to pull the container from link:https://hub.docker.com/u/crunchydata/[DockerHub], you can perform a build of all the containers locally 
+If you don't want to pull the container from link:https://hub.docker.com/u/crunchydata/[DockerHub], you can perform a build of the container locally 
 on your development host.
 
 The provided Dockerfiles build the container in two configurations:
  * base Centos7 image with the community PostgreSQL RPMs installed
  * base RHEL7 image with the Crunchy PostgreSQL RPMs installed
+
+Start the build by performing the following:
+
+....
+mkdir -p $HOME/wdev/src $HOME/wdev/bin $HOME/wdev/pkg 
+export GOPATH=$HOME/wdev
+go get github.com/tools/godep
+cd $GOPATH
+mkdir -p src/github.com/crunchydata
+cd src/github.com/crunchydata
+git clone https://github.com/CrunchyData/crunchy-watch.git
+export BUILDBASE=$GOPATH/src/github.com/crunchydata/crunchy-watch
+cd $BUILDBASE
+godep restore
+make build
+make dockerimage
+....
 
 Crunchy provides a commercially supported version of this container
 built upon RHEL 7 and the Crunchy supported PostgreSQL.  Contact Crunchy
@@ -48,15 +65,13 @@ for more details at link:http://www.crunchydata.com.
 Various examples are provided in the /examples directory and described
 in the documentation for running Docker, Kubernetes, and Openshift examples..
 
-See the following link for documentation on the docker
-examples: link:docs/docker.asciidoc[docker-examples] 
-
 To run the examples, you will need to set the CCP_IMAGE_TAG
 environment variable which indicates which version of the 
 container you will pull down and execute, for example:
 ....
 export BUILDBASE=$HOME/crunchy-watch
-export CCP_IMAGE_TAG=centos7-9.6-1.2.7
+export CCP_IMAGE_TAG=centos7-9.6-1.2.8
+cd $BUILDBASE/examples
 ....
 
 The BUILDBASE is the location of where you cloned the containers github
@@ -65,6 +80,5 @@ repository.
 The CCP_IMAGE_TAG is the version of the container you want to test
 with.  That version is out on Dockerhub.
 
-
-
+All examples live under the examples directory.
 

@@ -70,6 +70,9 @@ func GetEnv() {
 	str = os.Getenv("PROJECT_TYPE")
 	if str != "" {
 		EnvVars.PROJECT_TYPE = str
+	} else {
+		log.Println("PROJECT_TYPE is not supplied and is required")
+		os.Exit(2)
 	}
 
 	if str == OSE_PROJECT {

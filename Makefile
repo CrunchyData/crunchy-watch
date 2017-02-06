@@ -18,7 +18,7 @@ gendeps:
 
 docbuild:
 	cd docs && ./build-docs.sh
-watchserver:
+dockerimage:
 	cp `which oc` bin/watch
 	cp `which kubectl` bin/watch
 	cp $(GOPATH)/bin/watchserver bin/watch
