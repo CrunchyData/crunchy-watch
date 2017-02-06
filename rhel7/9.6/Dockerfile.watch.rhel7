@@ -1,0 +1,30 @@
+FROM rhel7.2
+
+LABEL Release="1.2.7" Vendor="Crunchy Data Solutions" PostgresVersion="9.6"
+
+ENV PGVERSION="9.6" 
+
+# Crunchy Postgres repo
+ADD conf/CRUNCHY-GPG-KEY.public  /
+ADD conf/crunchypg96.repo /etc/yum.repos.d/
+RUN rpm --import CRUNCHY-GPG-KEY.public
+
+# install docker from docker repo
+ADD conf/watch/docker-rhel.repo /etc/yum.repos.d/
+
+RUN yum -y install  \
+	docker-engine  hostname  openssh-clients \
+	procps-ng  postgresql96 atomic-openshift-clients \
+ && yum clean all -y
+
+# set up cpm directory
+RUN mkdir -p /opt/cpm/bin /opt/cpm/conf
+
+ADD bin/watch /opt/cpm/bin
+ADD conf/watch /opt/cpm/conf
+
+RUN chown -R daemon:daemon /opt/cpm 
+
+USER daemon
+
+CMD ["/opt/cpm/bin/start.sh"]
