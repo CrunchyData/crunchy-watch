@@ -43,11 +43,14 @@ type Env struct {
 	PROJECT_TYPE string
 	//required for openshift
 	NAMESPACE string
+	//required for cf
+	CONSUL_HOSTPORT string
 }
 
 const DOCKER_PROJECT = "docker"
 const OSE_PROJECT = "openshift"
 const KUBE_PROJECT = "kube"
+const CF_PROJECT = "cf"
 
 var EnvVars Env
 
@@ -82,6 +85,16 @@ func GetEnv() {
 			Logger.Printf("NAMESPACE is %s\n", EnvVars.NAMESPACE)
 		} else {
 			log.Println("NAMESPACE is not supplied and is required for openshift projects")
+			os.Exit(2)
+		}
+	}
+	if str == CF_PROJECT {
+		str = os.Getenv("CONSUL_HOSTPORT")
+		if str != "" {
+			EnvVars.CONSUL_HOSTPORT = str
+			Logger.Printf("CONSUL_HOSTPORT is %s\n", EnvVars.CONSUL_HOSTPORT)
+		} else {
+			log.Println("CONSUL_HOSTPORT is not supplied and is required for cloud foundry projects")
 			os.Exit(2)
 		}
 	}

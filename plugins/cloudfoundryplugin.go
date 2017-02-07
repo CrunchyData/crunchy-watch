@@ -24,7 +24,7 @@ func CloudFoundryFailover() {
 	api.Logger.Println("cloud foundry failover begins....")
 
 	config := consulapi.DefaultConfig()
-	config.Address = "192.168.0.7:8500"
+	config.Address = api.EnvVars.CONSUL_HOSTPORT
 	consul, err := consulapi.NewClient(config)
 	if err == nil {
 		api.Logger.Println("error getting CF client..." + err.Error())
