@@ -1,29 +1,32 @@
 FROM centos:7
 
-LABEL Release="1.2.7" Vendor="Crunchy Data Solutions" PostgresVersion="9.6"
+LABEL Vendor="Crunchy Data Solutions" \
+	Release="1.0.0"
+	PostgresVersion="9.6"
 
 ENV PGVERSION="9.6" \
 	PGDG_REPO="pgdg-centos96-9.6-3.noarch.rpm"
 
 # PGDG Postgres repo
-RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/${PGVERSION}/redhat/rhel-7-x86_64/${PGDG_REPO}
-
-# install docker from docker repo
-ADD conf/watch/docker-rhel.repo /etc/yum.repos.d/
-
-RUN yum -y install  \
-	docker-engine  hostname  openssh-clients \
-	procps-ng  postgresql96 atomic-openshift-clients \
- && yum clean all -y
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/${PGDG_REPO}
 
 # set up cpm directory
-RUN mkdir -p /opt/cpm/bin /opt/cpm/conf
+RUN mkdir -p /opt/cpm/crunchy-watch /opt/cpm/crunchy-watch/plugins /opt/cpm/bin
 
-ADD bin/watch /opt/cpm/bin
-ADD conf/watch /opt/cpm/conf
+# Install kubectl
+RUN curl -o /opt/cpm/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+
+RUN chmod +x /opt/cpm/bin/kubectl
+
+# Install oc
+# TODO
+
+ADD build/crunchy-watch /opt/cpm/crunchy-watch
+ADD build/plugins /opt/cpm/crunchy-watch/plugins
+ADD bin/start.sh /opt/cpm/bin
 
 RUN chown -R root:root /opt/cpm 
 
 USER root
 
-ENTRYPOINT ["/opt/cpm/bin/watchserver"]
+CMD ["/opt/cpm/bin/start.sh"]
