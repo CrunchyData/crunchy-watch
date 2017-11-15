@@ -1,0 +1,95 @@
+package util
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	replInfoQueryFormat = "SELECT %s(%s(), '0/0')::bigint, %s(%s(), '0/0')::bigint"
+	recvV9              = "pg_last_xlog_receive_location"
+	recvV10             = "pg_last_wal_receive_location"
+	replayV9            = "pg_last_xlog_replay_location"
+	replayV10           = "pg_last_wal_replay_location"
+	locationDiffV9      = "pg_xlog_location_diff"
+	locationDiffV10     = "pg_wal_location_diff"
+)
+
+type Replica struct {
+	Name   string
+	IP     string
+	Status *ReplicationInfo
+}
+
+type ReplicationInfo struct {
+	ReceiveLocation uint64
+	ReplayLocation  uint64
+}
+
+func GetReplicationInfo(target string) (*ReplicationInfo, error) {
+	conn, err := sql.Open("postgres", target)
+
+	if err != nil {
+		log.Errorf("Could not connect to: %s", target)
+		return nil, err
+	}
+
+	defer conn.Close()
+
+	// Get PG version
+	var version int
+
+	rows, err := conn.Query("SELECT current_setting('server_version_num')")
+
+	if err != nil {
+		log.Errorf("Could not perform query for version: %s", target)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&version); err != nil {
+			return nil, err
+		}
+	}
+
+	// Get replication info
+	var replicationInfoQuery string
+	var recvLocation uint64
+	var replayLocation uint64
+
+	if version < 100000 {
+		replicationInfoQuery = fmt.Sprintf(
+			replInfoQueryFormat,
+			locationDiffV9, recvV9,
+			locationDiffV9, replayV9,
+		)
+	} else {
+		replicationInfoQuery = fmt.Sprintf(
+			replInfoQueryFormat,
+			locationDiffV10, recvV10,
+			locationDiffV10, replayV10,
+		)
+	}
+
+	rows, err = conn.Query(replicationInfoQuery)
+
+	if err != nil {
+		log.Errorf("Could not perform replication info query: %s", target)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&recvLocation, &replayLocation); err != nil {
+			return nil, err
+		}
+	}
+
+	return &ReplicationInfo{recvLocation, replayLocation}, nil
+}
