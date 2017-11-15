@@ -13,5 +13,6 @@
 # limitations under the License.
 
 kubectl delete pod watch
-kubectl delete serviceaccount pg-watcher
 $BUILDBASE/examples/waitforterm.sh watch kubectl
+
+kubectl delete configmap watch-hooks-configmap
