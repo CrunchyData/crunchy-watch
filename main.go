@@ -100,6 +100,20 @@ var (
 		EnvVar:      "CRUNCHY_WATCH_FAILOVER_WAIT",
 		Description: "time to wait for failover to process",
 	}
+
+	PreHook = flags.FlagInfo{
+		Namespace:   "general",
+		Name:        "pre-hook",
+		EnvVar:      "CRUNCHY_WATCH_PRE_HOOK",
+		Description: "failover pre-hook to execute before processing failover",
+	}
+
+	PostHook = flags.FlagInfo{
+		Namespace:   "general",
+		Name:        "post-hook",
+		EnvVar:      "CRUNCHY_WATCH_POST_HOOK",
+		Description: "failover post-hook to execute after processing failover",
+	}
 )
 
 const (
@@ -208,9 +222,26 @@ func main() {
 
 			// If max failure has been exceeded then process failover
 			if failures > config.GetInt(MaxFailures.EnvVar) {
-				err := handler.Failover()
+				// Execute failover pre-hook
+				err := execute(config.GetString(PreHook.EnvVar))
 
 				if err != nil {
+					log.Error("Could not execute pre-hook")
+					log.Error(err.Error())
+				}
+
+				// Process failover
+				err = handler.Failover()
+
+				if err != nil {
+					log.Error(err.Error())
+				}
+
+				// Execute failover post-hook
+				execute(config.GetString(PostHook.EnvVar))
+
+				if err != nil {
+					log.Error("Could not execute post-hook")
 					log.Error(err.Error())
 				}
 

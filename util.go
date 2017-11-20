@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"plugin"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func loadPlatformModule(platform string) FailoverHandler {
@@ -30,7 +33,8 @@ func loadPlatformModule(platform string) FailoverHandler {
 	handler, ok := sym.(FailoverHandler)
 
 	if !ok {
-		fmt.Println("Unexpected type from module symbol")
+		log.Errorf("Could not load platform module: %s", platform)
+		log.Error("Unexpected type from module symbol")
 		os.Exit(1)
 	}
 
@@ -44,4 +48,20 @@ func checkPlatform(platform string) bool {
 		}
 	}
 	return false
+}
+
+func execute(command string) error {
+	if command == "" {
+		return nil
+	}
+
+	cmd := exec.Command(command)
+
+	err := cmd.Run()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
