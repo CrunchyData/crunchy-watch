@@ -3,22 +3,22 @@ FROM centos:7
 LABEL Name="crunchydata/watch" \
 	Vendor="Crunchy Data Solutions" \
 	Version="7.3" \
-	PostgresFullVersion="9.6.5" \
-	PostgresVersion="9.6" \
+	PostgresVersion="10" \
+	PostgresFullVersion="10.1" \
 	Release="1.7.0" \
-	Url="https://crunchydata.com"\
+	Url="https://crunchydata.com" \
 	Summary="" \
 	io.k8s.description="watch container" \
 	io.k8s.display-name="Crunchy Watch Container" \
 	io.openshift.expose-services="" \
 	io.openshift.tags="crunchy,database"
 
-ENV PGVERSION="9.6" \
-	PGDG_REPO="pgdg-centos96-9.6-3.noarch.rpm"
+ENV PGVERSION="10" \
+	PGDG_REPO="pgdg-centos10-10-2.noarch.rpm"
 
-# PGDG Postgres repo and nstall postgres client tools and libraries
-RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/${PGDG_REPO} && \
-	yum install -y postgresql96 postgresql96-libs && \
+# PGDG Postgres repo and install postgres client tools and libraries
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/${PGDG_REPO} && \
+	yum install -y postgresql10 postgresql10-libs && \
 	yum clean all && \
 	rm -rf /var/yum/cache
 
@@ -27,17 +27,14 @@ RUN groupadd -r -g 26 postgres && \
 	useradd -r -u 26 -g postgres postgres
 
 # Setup cpm directories
-RUN mkdir -p \
-	/opt/cpm/crunchy-watch \
-	/opt/cpm/crunchy-watch/plugins \
-	/opt/cpm/bin
+RUN mkdir -p /opt/cpm/crunchy-watch /opt/cpm/crunchy-watch/plugins /opt/cpm/bin
 
 # Install tools
 ADD tools/kubectl /opt/cpm/bin/kubectl
 ADD tools/openshift/oc /opt/cpm/bin/oc
 
 # Install crunchy-watch
-ADD build/crunchy-watch /opt/cpm/crunchy-watch
+ADD postgres:postgres build/crunchy-watch /opt/cpm/crunchy-watch --chown postgres:postgres
 ADD build/plugins /opt/cpm/crunchy-watch/plugins
 ADD bin/start.sh /opt/cpm/bin
 
