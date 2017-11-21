@@ -1,41 +1,64 @@
+.PHONY: all build modules kube-module openshift-module clean resolve docker tools
 
-ifndef BUILDBASE
-	export BUILDBASE=$(GOPATH)/src/github.com/crunchydata/crunchy-watch
-endif
+RELEASE_VERSION := 0.0.1
+PROJECT_DIR := $(shell pwd)
+BUILD_DIR := $(PROJECT_DIR)/build
+RELEASE_DIR := $(PROJECT_DIR)/release
+TOOLS_DIR := $(PROJECT_DIR)/tools
+VENDOR_DIR := $(PROJECT_DIR)/vendor
+DOCS_DIR := $(PROJECT_DIR)/docs
 
-versiontest:
-	if test -z "$$CCP_PGVERSION"; then echo "CCP_PGVERSION undefined"; exit 1;fi;
-	if test -z "$$CCP_BASEOS"; then echo "CCP_BASEOS undefined"; exit 1;fi;
-	if test -z "$$CCP_VERSION"; then echo "CCP_VERSION undefined"; exit 1;fi;
+all: clean resolve build
+
 clean:
-	rm $(GOPATH)/bin/watchserver
+	@echo "Cleaning project..."
+	@rm -rf $(BUILD_DIR)
+	@rm -rf $(RELEASE_DIR)
+	@rm -rf $(VENDOR_DIR)
+	@go clean -i
+
+resolve:
+	@echo "Resolving dependencies..."
+	@glide install
+
 build:
-	godep go install watchserver.go
-gendeps:
-	godep save \
-	github.com/crunchydata/crunchy-watch/watchapi \
-	github.com/crunchydata/crunchy-watch/plugins 
+	@echo "Building crunchy-watch..."
+	@go build -i -o $(BUILD_DIR)/crunchy-watch \
+		-ldflags='-s -w' \
+		$(PROJECT_DIR)/*.go
 
-docbuild:
-	cd docs && ./build-docs.sh
-dockerimage:
-	cp `which oc` bin/watch
-	cp `which kubectl` bin/watch
-	cp $(GOPATH)/bin/watchserver bin/watch
-	docker build -t crunchy-watch -f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.watch.$(CCP_BASEOS) .
-	docker tag crunchy-watch crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
-version:
-	docker build -t crunchy-version -f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.version.$(CCP_BASEOS) .
-	docker tag crunchy-version crunchydata/crunchy-version:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
-backrest:
-	make versiontest
-all:
-	make versiontest
-	make watchserver
-push:
-	./bin/push-to-dockerhub.sh
-default:
-	all
-test:
-	./tests/standalone/test-watch.sh; /usr/bin/test "$$?" -eq 0
+modules: kube-module openshift-module
 
+kube-module:
+	@echo "Building Kubernetes module..."
+	@go build -buildmode=plugin \
+		-o $(BUILD_DIR)/plugins/kube.so \
+		-ldflags='-s -w' \
+		plugins/kube/*.go
+
+openshift-module:
+	@echo "Building OpenShift module..."
+	@go build -buildmode=plugin \
+		-o $(BUILD_DIR)/plugins/openshift.so \
+		-ldflags='-s -w' \
+		plugins/openshift/*.go
+
+docker:
+	@echo "Building docker image..."
+	@docker build -t crunchy-watch \
+			-f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.watch.$(CCP_BASEOS) .
+	@docker tag crunchy-watch \
+			crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
+
+tools:
+	@echo "Downloading tools..."
+	mkdir -p $(TOOLS_DIR)
+	@echo "Downloading kubectl..."
+	@curl -o $(TOOLS_DIR)/kubectl https://storage.googleapis.com/kubernetes-release/release/$(shell curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+	@chmod +x $(TOOLS_DIR)/kubectl
+	@echo "Downloading oc..."
+	@curl -L -o $(TOOLS_DIR)/openshift.tar.gz https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-server-v3.6.1-008f2d5-linux-64bit.tar.gz
+	@mkdir -p $(TOOLS_DIR)/openshift
+	@tar -zxvf $(TOOLS_DIR)/openshift.tar.gz -C $(TOOLS_DIR)/openshift --strip 1
+
+all: build modules
