@@ -142,7 +142,7 @@ func init() {
 	flags.String(flagSet, Database, "postgres")
 	flags.String(flagSet, Username, "postgres")
 	flags.String(flagSet, Password, "")
-	flags.Int(flagSet, Timeout, 10)
+	flags.Duration(flagSet, Timeout, 10*time.Second)
 	flags.Int(flagSet, MaxFailures, 0)
 	flags.Duration(flagSet, HealthcheckInterval, DefaultHealthCheckInterval)
 	flags.Duration(flagSet, FailoverWait, DefaultFailoverWait)
@@ -195,6 +195,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	timeout := config.GetDuration(Timeout.EnvVar)
+
 	// Construct connection string to primary
 	target := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
 		config.GetString(Username.EnvVar),
@@ -202,7 +204,7 @@ func main() {
 		config.GetString(Primary.EnvVar),
 		config.GetInt(PrimaryPort.EnvVar),
 		config.GetString(Database.EnvVar),
-		config.GetInt(Timeout.EnvVar),
+		int(timeout.Seconds()),
 	)
 
 	// Watch
