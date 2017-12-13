@@ -1,6 +1,5 @@
-.PHONY: all build modules kube-module openshift-module clean resolve docker tools
+.PHONY: all build modules kube-module openshift-module clean resolve docker-image setup
 
-RELEASE_VERSION := 0.0.1
 PROJECT_DIR := $(shell pwd)
 BUILD_DIR := $(PROJECT_DIR)/build
 RELEASE_DIR := $(PROJECT_DIR)/release
@@ -43,14 +42,14 @@ openshift-module:
 		-ldflags='-s -w' \
 		plugins/openshift/*.go
 
-docker:
+docker-image:
 	@echo "Building docker image..."
 	@docker build -t crunchy-watch \
 			-f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.watch.$(CCP_BASEOS) .
 	@docker tag crunchy-watch \
 			crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
 
-tools:
+setup:
 	@echo "Downloading tools..."
 	mkdir -p $(TOOLS_DIR)
 	@echo "Downloading kubectl..."
