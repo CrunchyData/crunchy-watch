@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	config "github.com/spf13/viper"
 
-	"github.com/abrightwell/watch/util"
+	"github.com/crunchydata/crunchy-watch/util"
 )
 
 func defaultStrategy() (string, error) {
