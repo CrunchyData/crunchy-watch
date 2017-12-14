@@ -13,6 +13,6 @@
 # limitations under the License.
 
 kubectl delete pod watch
-$BUILDBASE/examples/waitforterm.sh watch kubectl
+../waitforterm.sh watch kubectl
 
 kubectl delete configmap watch-hooks-configmap
