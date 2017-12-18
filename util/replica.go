@@ -10,12 +10,14 @@ import (
 
 const (
 	replInfoQueryFormat = "SELECT %s(%s(), '0/0')::bigint, %s(%s(), '0/0')::bigint"
-	recvV9              = "pg_last_xlog_receive_location"
-	recvV10             = "pg_last_wal_receive_location"
-	replayV9            = "pg_last_xlog_replay_location"
-	replayV10           = "pg_last_wal_replay_location"
-	locationDiffV9      = "pg_xlog_location_diff"
-	locationDiffV10     = "pg_wal_location_diff"
+
+	recvV9         = "pg_last_xlog_receive_location"
+	replayV9       = "pg_last_xlog_replay_location"
+	locationDiffV9 = "pg_xlog_location_diff"
+
+	recvV10         = "pg_last_wal_receive_lsn"
+	replayV10       = "pg_last_wal_replay_lsn"
+	locationDiffV10 = "pg_wal_lsn_diff"
 )
 
 type Replica struct {
