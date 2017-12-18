@@ -11,12 +11,12 @@ function trap_sigterm() {
 	kill -SIGINT $(head -1 $PIDFILE)
 }
 
-cd /opt/cpm/crunchy-watch
+CMD=/opt/cpm/bin/crunchy-watch/crunchy-watch
 
 ENVS=$(env | grep CRUNCHY_WATCH)
 
 echo "Starting crunchy watch"
-echo ${ENVS} | crunchy-watch ${CRUNCHY_WATCH_PLATFORM} &
+echo ${ENVS} | ${CMD} ${CRUNCHY_WATCH_PLATFORM} &
 echo $! > ${PIDFILE}
 
 echo "Started..."

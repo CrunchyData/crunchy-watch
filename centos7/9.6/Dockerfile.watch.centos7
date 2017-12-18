@@ -27,18 +27,15 @@ RUN groupadd -r -g 26 postgres && \
 	useradd -r -u 26 -g postgres postgres
 
 # Setup cpm directories
-RUN mkdir -p \
-	/opt/cpm/crunchy-watch \
-	/opt/cpm/crunchy-watch/plugins \
-	/opt/cpm/bin
+RUN mkdir -p /opt/cpm/bin/crunchy-watch/plugins
 
 # Install tools
 ADD tools/kubectl /opt/cpm/bin/kubectl
 ADD tools/openshift/oc /opt/cpm/bin/oc
 
 # Install crunchy-watch
-ADD build/crunchy-watch /opt/cpm/crunchy-watch
-ADD build/plugins /opt/cpm/crunchy-watch/plugins
+ADD build/crunchy-watch /opt/cpm/bin/crunchy-watch
+ADD build/plugins /opt/cpm/bin/crunchy-watch/plugins
 ADD bin/start.sh /opt/cpm/bin
 
 # Ensure /opt/cpm has correct ownership
