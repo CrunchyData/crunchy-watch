@@ -219,18 +219,20 @@ func main() {
 		if err == nil {
 			log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
 		} else {
-			log.Errorf("Could not reach '%s'", config.GetString(Primary.EnvVar))
-			log.Debug(err.Error())
-
 			failures += 1
+
+			log.Errorf("Could not reach '%s' (Attempt: %d)",
+				config.GetString(Primary.EnvVar),
+				failures,
+			)
 
 			// If max failure has been exceeded then process failover
 			if failures > config.GetInt(MaxFailures.EnvVar) {
 
 				// process failover pre-hook
 				preHook := config.GetString(PreHook.EnvVar)
-				log.Infof("Pre-Hook: %s", preHook)
 				if preHook != "" {
+					log.Infof("Executing pre-hook: %s", preHook)
 					err := execute(preHook)
 					if err != nil {
 						log.Error("Could not execute pre-hook")
@@ -242,12 +244,11 @@ func main() {
 				err = handler.Failover()
 
 				if err != nil {
-					log.Error(err.Error())
+					log.Errorf("Failover process failed: %s", err.Error())
 				}
 
 				// Process failover post-hook
 				postHook := config.GetString(PostHook.EnvVar)
-				log.Infof("Post-Hook: %s", postHook)
 				if postHook != "" {
 					log.Infof("Executing post-hook: %s", postHook)
 					err := execute(postHook)

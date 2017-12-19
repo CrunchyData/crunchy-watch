@@ -108,22 +108,29 @@ func (h failoverHandler) Failover() error {
 		config.GetString(KubeFailoverStrategy.EnvVar))
 
 	// Get the list of replicas available
+	log.Info("Choosing failover replica...")
 	replica, err := getReplica()
 
 	if err != nil {
+		log.Error("An error occurred while choosing the failover replica")
 		return err
 	}
 
 	// Promote replica to be new primary.
+	log.Info("Promoting failover replica...")
 	err = promoteReplica(replica)
 
 	if err != nil {
+		log.Error("An error occurred while promoting the failover replica")
 		return err
 	}
+
 	// Change labels so that the replica becomes the new primary.
+	log.Info("Relabeling failover replica...")
 	err = relabelReplica(replica)
 
 	if err != nil {
+		log.Error("An error occurred while relabeling the failover replica")
 		return err
 	}
 
