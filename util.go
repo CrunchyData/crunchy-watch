@@ -55,7 +55,7 @@ func execute(command string) error {
 		return nil
 	}
 
-	cmd := exec.Command(command)
+	cmd := exec.Command("/bin/sh", command)
 
 	err := cmd.Run()
 

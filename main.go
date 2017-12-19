@@ -146,6 +146,8 @@ func init() {
 	flags.Int(flagSet, MaxFailures, 0)
 	flags.Duration(flagSet, HealthcheckInterval, DefaultHealthCheckInterval)
 	flags.Duration(flagSet, FailoverWait, DefaultFailoverWait)
+	flags.String(flagSet, PreHook, "")
+	flags.String(flagSet, PostHook, "")
 }
 
 func main() {
@@ -224,12 +226,16 @@ func main() {
 
 			// If max failure has been exceeded then process failover
 			if failures > config.GetInt(MaxFailures.EnvVar) {
-				// Execute failover pre-hook
-				err := execute(config.GetString(PreHook.EnvVar))
 
-				if err != nil {
-					log.Error("Could not execute pre-hook")
-					log.Error(err.Error())
+				// process failover pre-hook
+				preHook := config.GetString(PreHook.EnvVar)
+				log.Infof("Pre-Hook: %s", preHook)
+				if preHook != "" {
+					err := execute(preHook)
+					if err != nil {
+						log.Error("Could not execute pre-hook")
+						log.Error(err.Error())
+					}
 				}
 
 				// Process failover
@@ -239,12 +245,18 @@ func main() {
 					log.Error(err.Error())
 				}
 
-				// Execute failover post-hook
-				execute(config.GetString(PostHook.EnvVar))
+				// Process failover post-hook
+				postHook := config.GetString(PostHook.EnvVar)
+				log.Infof("Post-Hook: %s", postHook)
+				if postHook != "" {
+					log.Infof("Executing post-hook: %s", postHook)
+					err := execute(postHook)
 
-				if err != nil {
-					log.Error("Could not execute post-hook")
-					log.Error(err.Error())
+					if err != nil {
+						log.Error("Could not execute post-hook")
+						log.Error(err.Error())
+
+					}
 				}
 
 				// reset retry count.
