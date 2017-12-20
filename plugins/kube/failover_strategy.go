@@ -32,6 +32,8 @@ func defaultStrategy() (string, error) {
 	err := cmd.Run()
 
 	if err != nil {
+		log.Error("Error running 'kubectl' command")
+		log.Error(stderr.String())
 		return "", err
 	}
 
@@ -71,6 +73,8 @@ func labelStrategy() (string, error) {
 	err := cmd.Run()
 
 	if err != nil {
+		log.Error("Error running 'kubectl' command")
+		log.Error(stderr.String())
 		return "", err
 	}
 
@@ -78,6 +82,7 @@ func labelStrategy() (string, error) {
 
 	// If no 'trigger' replicas were found, then fall back to the default strategy.
 	if len(rows) == 0 {
+		log.Info("No 'trigger' replicas were found, falling back to 'default' failover strategy")
 		return defaultStrategy()
 	}
 
@@ -112,6 +117,8 @@ func latestStrategy() (string, error) {
 	err := cmd.Run()
 
 	if err != nil {
+		log.Error("Error running 'kubectl' command")
+		log.Error(stderr.String())
 		return "", err
 	}
 
@@ -148,7 +155,7 @@ func latestStrategy() (string, error) {
 		replicas[i].Status, err = util.GetReplicationInfo(target)
 
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Could not determine replication status for replica")
 			return "", err
 		}
 	}
