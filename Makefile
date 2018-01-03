@@ -47,7 +47,7 @@ docker-image:
 	@docker build -t crunchy-watch \
 			-f $(CCP_BASEOS)/$(CCP_PGVERSION)/Dockerfile.watch.$(CCP_BASEOS) .
 	@docker tag crunchy-watch \
-			crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PGVERSION)-$(CCP_VERSION)
+			crunchydata/crunchy-watch:$(CCP_BASEOS)-$(CCP_PG_FULLVERSION)-$(CCP_VERSION)
 
 setup:
 	@echo "Downloading tools..."

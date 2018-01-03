@@ -183,8 +183,8 @@ openshift client binaries.
 | resolve
 	| resolves all build related dependencies
 | docker-image
-	| build docker image - *Note:* requires `CCP_BASEOS`, `CCP_PGVERSION` and
-	`CCP_VERSION` to be defined.
+	| build docker image - *Note:* requires `CCP_BASEOS`, `CCP_PGVERSION`,
+	|`CCP_PG_FULLVERSION` and `CCP_VERSION` to be defined.
 | setup
 	| downloads required tools and docker image related dependencies
 |===
