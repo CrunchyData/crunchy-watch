@@ -230,6 +230,18 @@ executable or script must be provided by either the `--pre-hook` or
 `--post-hook` flags.  Or by defining the `CRUNCHY_WATCH_PRE_HOOK` or
 `CRUNCHY_WATCH_POST_HOOK` environment variables.
 
+*Example:*
+
+....
+$> crunchy-watch kube --pre-hook=/tmp/watch-pre-hook
+....
+
+Or,
+
+....
+$> CRUNCHY_WATCH_PRE_HOOK=/tmp/watch-pre-hook crunchy-watch kube
+....
+
 == Examples
 
 Various examples are provided in the `examples` directory and described in the
