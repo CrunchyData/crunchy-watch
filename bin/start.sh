@@ -7,11 +7,11 @@ export PATH=$PATH:/opt/cpm/crunchy-watch
 CMD=/opt/cpm/bin/crunchy-watch/crunchy-watch
 
 function trap_sigterm() {
-	echo "doing trap logic..."
-
-	echo "Clean shutdown crunchy-watch..."
+	echo "Shutting down crunchy-watch..."
 	kill -SIGINT $(head -1 $PIDFILE)
 }
+
+trap trap_sigterm SIGINT SIGTERM
 
 function check_deprecated() {
 	if [ -v ${1} ]; then

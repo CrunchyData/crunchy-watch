@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -151,6 +153,20 @@ func init() {
 }
 
 func main() {
+	go func() {
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+		)
+
+		log.Info("Waiting for signal...")
+		s := <-ch
+		log.Infof("Received signal: %s", s)
+
+		os.Exit(0)
+	}()
+
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
 
