@@ -7,7 +7,7 @@ TOOLS_DIR := $(PROJECT_DIR)/tools
 VENDOR_DIR := $(PROJECT_DIR)/vendor
 DOCS_DIR := $(PROJECT_DIR)/docs
 
-all: clean resolve build
+all: clean resolve build modules
 
 clean:
 	@echo "Cleaning project..."
