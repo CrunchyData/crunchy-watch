@@ -62,7 +62,7 @@ func relabelReplica(replica string) error {
 		"label",
 		"pod",
 		"--overwrite=true",
-		fmt.Sprintf("--namespace=%s", config.GetString(OSNamespace.EnvVar)),
+		fmt.Sprintf("--namespace=%s", config.GetString(OSProject.EnvVar)),
 		replica,
 		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
 	)
@@ -85,7 +85,7 @@ func promoteReplica(replica string) error {
 
 	cmd := exec.Command(ocCmd,
 		"exec",
-		fmt.Sprintf("--namespace=%s", config.GetString(OSNamespace.EnvVar)),
+		fmt.Sprintf("--namespace=%s", config.GetString(OSProject.EnvVar)),
 		replica,
 		"touch",
 		"/tmp/pg-failover-trigger",
