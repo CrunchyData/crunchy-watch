@@ -59,5 +59,3 @@ setup:
 	@curl -L -o $(TOOLS_DIR)/openshift.tar.gz https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-server-v3.6.1-008f2d5-linux-64bit.tar.gz
 	@mkdir -p $(TOOLS_DIR)/openshift
 	@tar --warning=no-unknown-keyword -zxvf $(TOOLS_DIR)/openshift.tar.gz -C $(TOOLS_DIR)/openshift --strip 1
-
-all: build modules
