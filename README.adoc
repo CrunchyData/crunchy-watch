@@ -137,10 +137,10 @@ below.
 [options="header"]
 |===
 | Option | Environment Variable | Default | Description
-| --openshift-namespace
-	| CRUNCHY_WATCH_OPENSHIFT_NAMESPACE
+| --openshift-project
+	| CRUNCHY_WATCH_OPENSHIFT_PROJECT
 	| default
-	| the openshift namespace
+	| the openshift project (namespace)
 | --openshift-failover-strategy
 	| CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY
 	| default
