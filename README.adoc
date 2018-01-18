@@ -1,7 +1,9 @@
-== Crunchy Watch
-v0.0.1, {docdate}
+= Crunchy Watch
+v1.7.1, {docdate}
 
 image::docs/crunchy_logo.png?raw=true[]
+
+== Overview
 
 Crunchy Watch is an application that watches a PostgreSQL master
 and looks for a failure, at which point it will perform
@@ -9,76 +11,254 @@ a failover scenario.
 
 Failover scenarios are extensible.  Sample failover scenarios are
 provided including:
+
  * trigger a failover on a random replica
  * trigger a failover on a replica using metadata labels
+ * trigger a failover on a replica that is further ahead than others
 
-=== Build Prerequisites
-
-Crunchy Watch is packaged into a Docker container which can
-execute in a pure Docker 1.12, Kubernetes 1.5.1, and Openshift 3.3
-environments.
+Crunchy Watch is packaged into a Docker container which can execute in a pure
+Docker 1.12, Kubernetes 1.7, and Openshift 3.6 environments.
 
 You can also run Crunchy Watch outside of a container as a binary.
 
-1) Installing / configuring Docker
+Crunchy provides a commercially supported version of this container built upon
+RHEL 7 and the Crunchy supported PostgreSQL.  Contact Crunchy for more details
+at link:http://www.crunchydata.com.
 
-On an EL7 system, docker can be installed with the following commands:
 
- * sudo yum -y install docker
- * sudo groupadd docker
- * sudo usermod -a -G docker ${USER} 
- * sudo systemctl enable docker;systemctl start docker
- * TIP:  remember to log out $USER for the docker group to take effect!
+== Usage
 
-2) Building the Container (Optional)
+Crunchy Watch is designed to operate on multiple platforms. Therefore, it is
+necessary to specify the platform at startup.
 
-If you don't want to pull the container from link:https://hub.docker.com/u/crunchydata/[DockerHub], you can perform a build of the container locally 
-on your development host.
+`$> crunchy-watch <platform>`
 
-The provided Dockerfiles build the container in two configurations:
- * base Centos7 image with the community PostgreSQL RPMs installed
- * base RHEL7 image with the Crunchy PostgreSQL RPMs installed
+Supported Platforms:
 
-Start the build by performing the following:
+[options="header"]
+|===
+| Name       | Value
+| Kubernetes | kube
+| Openshift  | openshift
+|===
+
+*Example:*
+
+`$> crunchy-watch kube`
+
+=== Options
+
+All options can be configured via a command-line flag or an environment variable.
+
+Flag values will take precedence over values defined by an environment variable.
+
+There are general options that apply across all platforms. As well, each
+platform provides their own specific options. The details for each are provided
+below.
+
+==== General
+
+[options="header"]
+|===
+| Option | Environment Variable | Default | Description
+| --primary
+	| CRUNCHY_WATCH_PRIMARY
+	|
+	| host of the primary PostgreSQL instance
+| --primary-port
+	| CRUNCHY_WATCH_PRIMARY_PORT
+	| 5432
+	| port of the primary PostreSQL instance
+| --replica
+	| CRUNCHY_WATCH_REPLICA
+	|
+	| host of the replica PostgreSQL instance
+| --replica-port
+	| CRUNCHY_WATCH_REPLICA_PORT
+	| 5432
+	| port of the replica PostgreSQL instance
+| --username
+	| CRUNCHY_WATCH_USERNAME
+	| postgres
+	| login user to connect to PostgreSQL
+| --password
+	| CRUNCHY_WATCH_PASSWORD
+	|
+	| login user's password to connect to PostgreSQL
+| --database
+	| CRUNCHY_WATCH_DATABASE
+	| postgres
+	| database to connect
+| --timeout
+	| CRUNCHY_WATCH_TIMEOUT
+	| 10s
+	| connection timeout - valid time units are "ns", "us", "ms", "s", "m", "h"
+| --max-failures
+	| CRUNCHY_WATCH_MAX_FAILURES
+	| 0
+	| maximum number of failures before performing a failover
+| --healthcheck-interval
+	| CRUNCHY_WATCH_HEALTHCHECK_INTERVAL
+	| 10s
+	| interval between healthchecks - valid time units are "ns", "us", "ms",
+	"s", "m", "h"
+| --failover-wait
+	| CRUNCHY_WATCH_FAILOVER_WAIT
+	| 50s
+	| time to wait for failover to process - valid time units are "ns", "us",
+	"ms", "s", "m", "h"
+| --pre-hook
+	| CRUNCHY_WATCH_PRE_HOOK
+	|
+	| failover hook to execute before processing failover
+| --post-hook
+	| CRUNCHY_WATCH_POST_HOOK
+	|
+	| failover hook to execute after processing failover
+|===
+
+==== Kubernetes
+
+[options="header"]
+|===
+| Name | Environment Variable | Default | Description
+| --kube-namespace
+	| CRUNCHY_WATCH_KUBE_NAMESPACE
+	| default
+	| the kubernetes namespace
+| --kube-failover-strategy
+	| CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY
+	| default
+	| the kubernetes failover strategy
+|===
+
+==== Openshift
+
+[options="header"]
+|===
+| Option | Environment Variable | Default | Description
+| --openshift-project
+	| CRUNCHY_WATCH_OPENSHIFT_PROJECT
+	| default
+	| the openshift project (namespace)
+| --openshift-failover-strategy
+	| CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY
+	| default
+	| the openshift failover strategy
+|===
+
+== Build
+
+Building `crunchy-watch`, supporting plugin modules and docker image are
+accomplished using `make` and the provide Makefile.
+
+=== Requirements
+
+ * Go 1.8 or greater
+ * Docker 1.12 or greater
+ * Kubernetes client (kubectl) 1.7 or greater
+ * https://www.openshift.org/download.html[Openshift client (oc) 3.6] or greater
+ * https://github.com/Masterminds/glide[Glide 0.12] or greater
+
+*Note:* The `$> make setup` target (below) will retrieve the requisite kubernetes and
+openshift client binaries.
+
+=== Targets
+
+[options="header"]
+|===
+| Target | Description
+| all
+	| (*default*) calls `clean`, `resolve` and `build` targets
+| build
+	| builds `crunchy-watch` binary
+| modules
+	| builds all plugin modules
+| kube-module
+	| builds kubernetes plugin module
+| openshift-module
+	| builds openshift plugin module
+| clean
+	| cleans all build related artifacts, including dependencies.
+| resolve
+	| resolves all build related dependencies
+| docker-image
+	| build docker image - *Note:* requires `CCP_BASEOS`, `CCP_PGVERSION`,
+	|`CCP_PG_FULLVERSION` and `CCP_VERSION` to be defined.
+| setup
+	| downloads required tools and docker image related dependencies
+|===
+
+== Extending Crunchy Watch
+
+Crunchy Watch is designed with extension of its function and supported
+platforms in mind.
+
+=== Extending by Plugin
+
+Crunchy Watch makes use of the golang plugin package. Therefore it is possible
+to build support for new platforms separate from each other.
+
+To integrate with the plugin system the following interface must be met:
 
 ....
-mkdir -p $HOME/wdev/src $HOME/wdev/bin $HOME/wdev/pkg 
-export GOPATH=$HOME/wdev
-go get github.com/tools/godep
-cd $GOPATH
-mkdir -p src/github.com/crunchydata
-cd src/github.com/crunchydata
-git clone https://github.com/CrunchyData/crunchy-watch.git
-export BUILDBASE=$GOPATH/src/github.com/crunchydata/crunchy-watch
-cd $BUILDBASE
-godep restore
-make build
-make dockerimage
+type FailoverHandler interface {
+	Failover() error
+	SetFlags(*flag.FlagSet)
+}
 ....
 
-Crunchy provides a commercially supported version of this container
-built upon RHEL 7 and the Crunchy supported PostgreSQL.  Contact Crunchy
-for more details at link:http://www.crunchydata.com.
+`Failover()` is called to process the failover logic for the platform that the
+plugin supports.
 
-=== Examples
+`SetFlags(*flag.FlagSet)` is called immediately after the plugin is loaded.
+This allows for plugin to define options/flags that are unique to its
+operation.
 
-Various examples are provided in the /examples directory and described
-in the documentation for running Docker, Kubernetes, and Openshift examples..
+As well, it must be built with the `-buildmode=plugin` option. See an example
+of this in the project link:Makefile[Makefile]
 
-To run the examples, you will need to set the CCP_IMAGE_TAG
-environment variable which indicates which version of the 
-container you will pull down and execute, for example:
+=== Extending by Hook
+
+Crunchy Watch provides both a `pre` and `post` failover hook. These hooks will
+be executed in a shell environment created by the `crunchy-watch` process.
+Therefore they can be any executable or script that can be called by the user
+running the `crunchy-watch` process.
+
+To configure the execution of these hooks, a fully qualified path to the
+executable or script must be provided by either the `--pre-hook` or
+`--post-hook` flags.  Or by defining the `CRUNCHY_WATCH_PRE_HOOK` or
+`CRUNCHY_WATCH_POST_HOOK` environment variables.
+
+*Example:*
+
 ....
-export BUILDBASE=$HOME/crunchy-watch
-export CCP_IMAGE_TAG=centos7-9.6-1.2.8
-cd $BUILDBASE/examples
+$> crunchy-watch kube --pre-hook=/tmp/watch-pre-hook
 ....
 
-The BUILDBASE is the location of where you cloned the containers github
-repository.
+Or,
 
-The CCP_IMAGE_TAG is the version of the container you want to test
-with.  That version is out on Dockerhub.
+....
+$> CRUNCHY_WATCH_PRE_HOOK=/tmp/watch-pre-hook crunchy-watch kube
+....
 
-All examples live under the examples directory.
+== Examples
+
+Various examples are provided in the `examples` directory and described in the
+documentation.
+
+To run the examples, you will need to set the `CCP_IMAGE_TAG` environment
+variable which indicates which version of the container you will pull down and
+execute, for example:
+
+....
+$> export CCP_IMAGE_TAG=centos7-9.6.5-1.7.0
+$> ./run.sh
+....
+
+Or,
+
+....
+$> CCP_IMAGE_TAG=centos7-9.6.5-1.7.1 ./run.sh
+....
 

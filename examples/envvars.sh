@@ -20,13 +20,12 @@
 export LOCAL_IP=`hostname --ip-address`
 
 if [ -v $CCP_IMAGE_TAG ]; then
-	export CCP_IMAGE_TAG=centos7-9.6-1.2.7
-	echo "CCP_IMAGE_TAG was not found...using current tag of " $CCP_IMAGE_TAG
+	echo "CCP_IMAGE_TAG is not set."
+	exit 1
 fi
 
 # for PVC templates - NFS uses ReadWriteMany - EBS uses ReadWriteOnce
 
 # for templates - allow for override of Image Path Prefix
-#export CCP_IMAGE_PREFIX=172.30.240.45:5000/jeff-project
 export REPLACE_CCP_IMAGE_PREFIX=crunchydata
 export CCP_IMAGE_PREFIX=crunchydata

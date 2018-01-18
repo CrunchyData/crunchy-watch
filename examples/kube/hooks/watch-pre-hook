@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Hello from crunchy-watch pre-hook!"
+touch /tmp/hello-crunchy-watch-pre-hook

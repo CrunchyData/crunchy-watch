@@ -1,1 +1,9 @@
 vendor
+build
+tools
+
+# Crunchy repo files
+CRUNCHY-GPG-KEY.public
+crunchypg95.repo
+crunchypg96.repo
+crunchypg10.repo

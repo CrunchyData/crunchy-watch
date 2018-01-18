@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 Crunchy Data Solutions, Inc.
+# Copyright 2017 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source $BUILDBASE/examples/envvars.sh
+
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $DIR/cleanup.sh
 
+# Create 'watch-hooks-configmap'.
+oc create configmap watch-hooks-configmap \
+	--from-file=./hooks/watch-pre-hook \
+	--from-file=./hooks/watch-post-hook
+
 oc create -f $DIR/watch-sa.json
-oc policy add-role-to-group edit system:serviceaccounts -n crunchy
-oc process -f $DIR/watch.json -v CCP_IMAGE_TAG=$CCP_IMAGE_TAG | oc create -f -
+oc policy add-role-to-group edit system:serviceaccounts
+envsubst < $DIR/watch.json | oc process -f - | oc create -f -

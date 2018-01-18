@@ -1,6 +1,5 @@
-#!/bin/bash  -x
-
-# Copyright 2017 Crunchy Data Solutions, Inc.
+#!/bin/bash
+# Copyright 2016 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,25 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# this script is useful for development of the watch container
-# or if you need to add some setup logic but as of right now, 1.2.8,
-# the watchserver is run as the ENTRYPOINT directly in the container
-#
+source ../envvars.sh
 
-function trap_sigterm() {
-	echo "doing trap logic..."  >> /tmp/trap.out
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-trap 'trap_sigterm' SIGINT SIGTERM
+$DIR/cleanup.sh
 
-export PATH=$PATH:/opt/cpm/bin
+kubectl create configmap watch-hooks-configmap \
+		--from-file=./hooks/watch-pre-hook \
+		--from-file=./hooks/watch-post-hook
 
-watchserver &
-
-# this loop is for debugging only
-while true; do 
-	sleep 10
-done
-
-wait
+envsubst < $DIR/legacy-watch-pod.json | kubectl create -f -

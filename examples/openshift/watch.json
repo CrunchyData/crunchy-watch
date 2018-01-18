@@ -13,6 +13,9 @@
     "parameters": [{
         "name": "CCP_IMAGE_TAG",
         "description": "the image tag to use"
+    }, {
+        "name": "NAMESPACE",
+        "description": "the project namespace to use"
     }],
     "objects": [{
         "kind": "Pod",
@@ -29,36 +32,52 @@
                 "name": "watch",
                 "image": "crunchydata/crunchy-watch:${CCP_IMAGE_TAG}",
                 "env": [{
-                    "name": "NAMESPACE",
-                    "value": "crunchy"
-                }, {
-                    "name": "SLEEP_TIME",
-                    "value": "20"
-                }, {
-                    "name": "PROJECT_TYPE",
+                    "name": "CRUNCHY_WATCH_PLATFORM",
                     "value": "openshift"
+                },{
+                    "name": "CRUNCHY_WATCH_OPENSHIFT_PROJECT",
+                    "value": "crunchy-examples"
+                },{
+                    "name": "CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY",
+                    "value": "latest"
+                },{
+                    "name": "CRUNCHY_WATCH_PRIMARY",
+                    "value": "ms-primary"
                 }, {
-                    "name": "PG_MASTER_SERVICE",
-                    "value": "master-dc"
-                }, {
-                    "name": "PG_SLAVE_SERVICE",
-                    "value": "replica-dc"
-                }, {
-                    "name": "PG_MASTER_PORT",
+                    "name": "CRUNCHY_WATCH_PRIMARY_PORT",
                     "value": "5432"
                 }, {
-                    "name": "HOME",
-                    "value": "/tmp"
+                    "name": "CRUNCHY_WATCH_REPLICA",
+                    "value": "ms-replica"
                 }, {
-                    "name": "PG_MASTER_USER",
-                    "value": "postgres"
+                    "name": "CRUNCHY_WATCH_REPLICA_PORT",
+                    "value": "5432"
                 }, {
-                    "name": "PG_MASTER_PASSWORD",
+                    "name": "CRUNCHY_WATCH_USERNAME",
+                    "value": "primaryuser"
+                }, {
+                    "name": "CRUNCHY_WATCH_PASSWORD",
                     "value": "password"
                 }, {
-                    "name": "PG_DATABASE",
+                    "name": "CRUNCHY_WATCH_DATABASE",
                     "value": "postgres"
+                }, {
+                    "name": "CRUNCHY_WATCH_PRE_HOOK",
+                    "value": "/hooks/watch-pre-hook"
+                }, {
+                    "name": "CRUNCHY_WATCH_POST_HOOK",
+                    "value": "/hooks/watch-post-hook"
+                }],
+                "volumeMounts": [{
+                    "name": "watch-hooks-volume",
+                    "mountPath": "/hooks"
                 }]
+            }],
+            "volumes": [{
+                "name": "watch-hooks-volume",
+                "configMap": {
+                    "name": "watch-hooks-configmap"
+                }
             }]
         }
     }]
