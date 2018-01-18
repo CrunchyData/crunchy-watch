@@ -1,9 +1,9 @@
 this example assumes you have run the crunchy-containers
-example/docker/master-replica example.  That example will
-create a master container and replica container that form
+example/docker/primary-replica example.  That example will
+create a primary container and replica container that form
 a postgres cluster. 
 
-This watch example looks for a master container, if not found, 
+This watch example looks for a primary container, if not found, 
 it will trigger a failover onto the replica container.
 
 To test this example, delete the master pod and examine
