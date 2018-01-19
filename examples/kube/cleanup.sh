@@ -15,4 +15,8 @@
 kubectl delete pod watch
 ../waitforterm.sh watch kubectl
 
+kubectl delete sa pg-watcher
+
+kubectl delete clusterrolebinding pg-watcher-sa-edit
+
 kubectl delete configmap watch-hooks-configmap

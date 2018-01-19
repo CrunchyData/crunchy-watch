@@ -5,6 +5,7 @@ metadata:
   labels:
     name: crunchy-watch
 spec:
+  serviceAccount: pg-watcher
   containers:
     - name: watch
       image: crunchydata/crunchy-watch:$CCP_IMAGE_TAG
@@ -12,9 +13,9 @@ spec:
         - name: CRUNCHY_WATCH_PLATFORM
           value: kube
         - name: CRUNCHY_WATCH_PRIMARY
-          value: ms-primary
+          value: pr-primary
         - name: CRUNCHY_WATCH_REPLICA
-          value: ms-replica
+          value: pr-replica
         - name: CRUNCHY_WATCH_USERNAME
           value: primaryuser
         - name: CRUNCHY_WATCH_PASSWORD
@@ -26,7 +27,7 @@ spec:
         - name: CRUNCHY_WATCH_FAILOVER_WAIT
           value: 10s
         - name: CRUNCHY_WATCH_KUBE_NAMESPACE
-          value: default
+          value: demo
         - name: CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY
           value: latest
         - name: CRUNCHY_WATCH_PRE_HOOK

@@ -115,6 +115,7 @@ func (h failoverHandler) Failover() error {
 		log.Error("An error occurred while choosing the failover replica")
 		return err
 	}
+	log.Infof("Chose failover target (%s)\n", replica)
 
 	// Promote replica to be new primary.
 	log.Info("Promoting failover replica...")
