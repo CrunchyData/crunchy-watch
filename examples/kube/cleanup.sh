@@ -17,6 +17,6 @@ kubectl delete pod watch
 
 kubectl delete sa pg-watcher
 
-kubectl delete clusterrolebinding pg-watcher-sa-edit
+kubectl delete rolebinding pg-watcher-sa-edit
 
 kubectl delete configmap watch-hooks-configmap

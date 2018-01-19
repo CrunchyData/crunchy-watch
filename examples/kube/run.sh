@@ -24,7 +24,7 @@ kubectl create configmap watch-hooks-configmap \
 
 kubectl create -f $DIR/watch-sa.json
 
-kubectl create clusterrolebinding pg-watcher-sa-edit \
+kubectl create rolebinding pg-watcher-sa-edit \
   --clusterrole=edit \
   --serviceaccount=demo:pg-watcher \
   --namespace=demo
