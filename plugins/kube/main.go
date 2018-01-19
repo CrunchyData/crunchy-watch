@@ -79,6 +79,32 @@ func relabelReplica(replica string) error {
 	return err
 }
 
+func deletePrimaryPod() error {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	cmd := exec.Command(kubectlCmd,
+		"delete",
+		"pod",
+		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
+		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
+	)
+
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	if err != nil {
+		log.Error(stderr.String())
+	}
+
+	log.Info("stdout=" + stdout.String())
+	log.Info("stderr=" + stderr.String())
+
+	return err
+}
+
 func promoteReplica(replica string) error {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -106,6 +132,16 @@ func promoteReplica(replica string) error {
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(KubeFailoverStrategy.EnvVar))
+
+	// shoot the old primary in the head
+	log.Info("Deleting existing primary...")
+	err := deletePrimaryPod()
+
+	if err != nil {
+		log.Error(err)
+		log.Error("An error occurred while deleting the old primary")
+	}
+	log.Info("Deleted old primary ")
 
 	// Get the list of replicas available
 	log.Info("Choosing failover replica...")
