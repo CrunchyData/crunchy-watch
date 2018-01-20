@@ -76,6 +76,35 @@ func relabelReplica(replica string) error {
 		log.Error(stderr.String())
 	}
 
+	log.Info(stdout.String())
+	log.Info(stderr.String())
+
+	return err
+}
+
+func deletePrimaryPod() error {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	cmd := exec.Command(ocCmd,
+		"delete",
+		"pod",
+		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
+		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
+	)
+
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	if err != nil {
+		log.Error(stderr.String())
+	}
+
+	log.Info(stdout.String())
+	log.Info(stderr.String())
+
 	return err
 }
 
@@ -100,12 +129,25 @@ func promoteReplica(replica string) error {
 		log.Error(stderr.String())
 	}
 
+	log.Info(stdout.String())
+	log.Info(stderr.String())
+
 	return err
 }
 
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(OSFailoverStrategy.EnvVar))
+
+	// shoot the old primary in the head
+	log.Info("Deleting existing primary...")
+	err := deletePrimaryPod()
+
+	if err != nil {
+		log.Error(err)
+		log.Error("An error occurred while deleting the old primary")
+	}
+	log.Info("Deleted old primary ")
 
 	log.Info("Choosing failover replica...")
 	replica, err := getReplica()
@@ -114,6 +156,8 @@ func (h failoverHandler) Failover() error {
 		log.Error("An error occurred while choosing the failover replica")
 		return err
 	}
+
+	log.Infof("Chose failover target (%s)\n", replica)
 
 	log.Info("Promoting failover replica...")
 	err = promoteReplica(replica)

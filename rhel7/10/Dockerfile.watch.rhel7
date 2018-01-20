@@ -5,8 +5,8 @@ MAINTAINER Crunchy Data <support@crunchydata.com>
 LABEL Name="crunchydata/watch" \
 	Vendor="Crunchy Data Solutions" \
 	Version="7.3" \
-	PostgresVersion="9.6" \
-	PostgresFullVersion="9.6.6" \
+	PostgresVersion="10" \
+	PostgresFullVersion="10.1" \
 	Release="1.7.1" \
 	Url="https://crunchydata.com" \
 	Summary="Watches the primary in a primary/replica deployment, triggering a failover when the primary can't be reached" \
@@ -23,18 +23,18 @@ COPY docs/help.1 /help.1
 COPY docs/help.md /help.md
 COPY docs/licenses /licenses
 
-ENV PGVERSION="9.6"
+ENV PGVERSION="10"
 
 # Crunchy Postgres repo
 ADD CRUNCHY-GPG-KEY.public  /
-ADD crunchypg96.repo /etc/yum.repos.d/
+ADD crunchypg10.repo /etc/yum.repos.d/
 RUN rpm --import CRUNCHY-GPG-KEY.public
 
 # Install Crunchy Certified Postgres tools and libraries
 RUN yum -y install  \
 	hostname \
-	postgresql96 \
-	postgresql96-libs \
+	postgresql10 \
+	postgresql10-libs \
 	atomic-openshift-clients \
  && yum clean all -y
 
@@ -49,6 +49,7 @@ RUN mkdir -p /opt/cpm/bin/crunchy-watch/plugins
 # Install tools
 ADD tools/kubectl /opt/cpm/bin/kubectl
 ADD tools/openshift/oc /opt/cpm/bin/oc
+
 
 # Install crunchy-watch
 ADD build/crunchy-watch /opt/cpm/bin/crunchy-watch

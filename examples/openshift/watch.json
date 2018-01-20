@@ -2,10 +2,10 @@
     "kind": "Template",
     "apiVersion": "v1",
     "metadata": {
-        "name": "pg-replica-example",
+        "name": "crunchy-watch-example",
         "creationTimestamp": null,
         "annotations": {
-            "description": "PostgreSQL Replication Example",
+            "description": "Crunchy Watch Example",
             "iconClass": "icon-database",
             "tags": "database,postgresql,replication"
         }
@@ -13,6 +13,9 @@
     "parameters": [{
         "name": "CCP_IMAGE_TAG",
         "description": "the image tag to use"
+    }, {
+        "name": "CCP_IMAGE_PREFIX",
+        "description": "the image prefix to use"
     }, {
         "name": "NAMESPACE",
         "description": "the project namespace to use"
@@ -30,25 +33,25 @@
             "serviceAccount": "pg-watcher",
             "containers": [{
                 "name": "watch",
-                "image": "crunchydata/crunchy-watch:${CCP_IMAGE_TAG}",
+                "image": "${CCP_IMAGE_PREFIX}/crunchy-watch:${CCP_IMAGE_TAG}",
                 "env": [{
                     "name": "CRUNCHY_WATCH_PLATFORM",
                     "value": "openshift"
                 },{
                     "name": "CRUNCHY_WATCH_OPENSHIFT_PROJECT",
-                    "value": "crunchy-examples"
+                    "value": "${NAMESPACE}"
                 },{
                     "name": "CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY",
                     "value": "latest"
                 },{
                     "name": "CRUNCHY_WATCH_PRIMARY",
-                    "value": "ms-primary"
+                    "value": "pr-primary"
                 }, {
                     "name": "CRUNCHY_WATCH_PRIMARY_PORT",
                     "value": "5432"
                 }, {
                     "name": "CRUNCHY_WATCH_REPLICA",
-                    "value": "ms-replica"
+                    "value": "pr-replica"
                 }, {
                     "name": "CRUNCHY_WATCH_REPLICA_PORT",
                     "value": "5432"

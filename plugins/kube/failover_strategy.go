@@ -37,6 +37,9 @@ func defaultStrategy() (string, error) {
 		return "", err
 	}
 
+	log.Debug(stdout.String())
+	log.Debug(stderr.String())
+
 	rows := strings.Split(stdout.String(), "\n")
 
 	if len(rows) == 0 {
@@ -77,6 +80,9 @@ func labelStrategy() (string, error) {
 		log.Error(stderr.String())
 		return "", err
 	}
+
+	log.Debug(stdout.String())
+	log.Debug(stderr.String())
 
 	rows := strings.Split(stdout.String(), "\n")
 
@@ -121,6 +127,9 @@ func latestStrategy() (string, error) {
 		log.Error(stderr.String())
 		return "", err
 	}
+
+	log.Debug(stdout.String())
+	log.Debug(stderr.String())
 
 	rows := strings.Split(stdout.String(), "\n")
 

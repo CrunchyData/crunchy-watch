@@ -76,6 +76,9 @@ func relabelReplica(replica string) error {
 		log.Error(stderr.String())
 	}
 
+	log.Info(stdout.String())
+	log.Info(stderr.String())
+
 	return err
 }
 
@@ -99,8 +102,8 @@ func deletePrimaryPod() error {
 		log.Error(stderr.String())
 	}
 
-	log.Info("stdout=" + stdout.String())
-	log.Info("stderr=" + stderr.String())
+	log.Info(stdout.String())
+	log.Info(stderr.String())
 
 	return err
 }
@@ -125,6 +128,9 @@ func promoteReplica(replica string) error {
 	if err != nil {
 		log.Error(stderr.String())
 	}
+
+	log.Info(stdout.String())
+	log.Info(stderr.String())
 
 	return err
 }

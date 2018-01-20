@@ -1,30 +1,63 @@
-FROM rhel7.2
+FROM registry.access.redhat.com/rhel
 
-LABEL Release="1.2.7" Vendor="Crunchy Data Solutions" PostgresVersion="9.5"
+MAINTAINER Crunchy Data <support@crunchydata.com>
 
-ENV PGVERSION="9.5" 
+LABEL Name="crunchydata/watch" \
+	Vendor="Crunchy Data Solutions" \
+	Version="7.3" \
+	PostgresVersion="9.5" \
+	PostgresFullVersion="9.5.9" \
+	Release="1.7.1" \
+	Url="https://crunchydata.com" \
+	Summary="Watches the primary in a primary/replica deployment, triggering a failover when the primary can't be reached" \
+	io.k8s.description="watch container" \
+	io.k8s.display-name="Crunchy Watch Container" \
+	io.openshift.expose-services="" \
+	run="" \
+	start="" \
+	stop="" \
+	io.openshift.tags="crunchy,database"
+
+
+COPY docs/help.1 /help.1
+COPY docs/help.md /help.md
+COPY docs/licenses /licenses
+
+ENV PGVERSION="9.5"
 
 # Crunchy Postgres repo
-ADD conf/CRUNCHY-GPG-KEY.public  /
-ADD conf/crunchypg95.repo /etc/yum.repos.d/
+ADD CRUNCHY-GPG-KEY.public  /
+ADD crunchypg95.repo /etc/yum.repos.d/
 RUN rpm --import CRUNCHY-GPG-KEY.public
 
-# install docker from docker repo
-ADD conf/watch/docker-rhel.repo /etc/yum.repos.d/
-
+# Install Crunchy Certified Postgres tools and libraries
 RUN yum -y install  \
-	docker-engine  hostname  openssh-clients \
-	procps-ng  postgresql95 atomic-openshift-clients \
+	hostname \
+	postgresql95 \
+	postgresql95-libs \
+	atomic-openshift-clients \
  && yum clean all -y
 
-# set up cpm directory
-RUN mkdir -p /opt/cpm/bin /opt/cpm/conf
+# Create postgres user and group
+RUN groupadd -r -g 26 postgres && \
+	useradd -r -u 26 -g postgres postgres
 
-ADD bin/watch /opt/cpm/bin
-ADD conf/watch /opt/cpm/conf
+# Setup cpm directories
+RUN mkdir -p /opt/cpm/bin/crunchy-watch/plugins
 
-RUN chown -R root:root /opt/cpm 
 
-USER root
+# Install tools
+ADD tools/kubectl /opt/cpm/bin/kubectl
+ADD tools/openshift/oc /opt/cpm/bin/oc
 
-ENTRYPOINT ["/opt/cpm/bin/watchserver"]
+# Install crunchy-watch
+ADD build/crunchy-watch /opt/cpm/bin/crunchy-watch
+ADD build/plugins /opt/cpm/bin/crunchy-watch/plugins
+ADD bin/start.sh /opt/cpm/bin
+
+# Ensure /opt/cpm has correct ownership
+RUN chown -R postgres:postgres /opt/cpm 
+
+USER postgres
+
+ENTRYPOINT ["/opt/cpm/bin/start.sh"]
