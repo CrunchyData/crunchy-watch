@@ -163,6 +163,64 @@ accomplished using `make` and the provide Makefile.
 *Note:* The `$> make setup` target (below) will retrieve the requisite kubernetes and
 openshift client binaries.
 
+=== Centos Build Steps
+
+These steps assume your normal userid is *someuser* and 
+you are installing on a clean  minimal Centos7 install.
+
+==== Install Docker
+
+....
+sudo yum -y install docker
+sudo groupadd docker
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -a -G docker someuser
+newgrp docker
+docker ps
+....
+
+==== Install Build Dependencies
+
+....
+sudo yum -y install gettext git golang
+....
+
+==== Setup Project Settings and Structure
+
+....
+export GOPATH=$HOME/odev
+mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg
+mkdir -p $GOPATH/src/github.com/crunchydata/
+export PATH=$PATH:$GOPATH/bin
+export CCP_BASEOS=centos7
+export CCP_PGVERSION=10
+export CCP_PG_FULLVERSION=10.1
+cd $GOPATH/src/github.com/crunchydata
+git clone https://github.com/CrunchyData/crunchy-watch.git
+cd crunchy-watch
+....
+
+==== Get Project Dependencies
+
+....
+go get github.com/Masterminds/glide
+glide update
+make setup
+....
+
+==== Build from Source
+
+....
+make
+....
+
+==== Build the Docker Image
+
+....
+make docker-image
+....
+
 === Targets
 
 [options="header"]
