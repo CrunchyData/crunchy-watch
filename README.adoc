@@ -217,6 +217,14 @@ make
 
 ==== Build the Docker Image
 
+NOTE:  To build the RHEL based image, you will need the Crunchy
+repo keys to be copied to the $GOPATH/src/github.com/crunchydata/crunchy-watch directory.   This is because the RHEL image is based on the 
+Crunchy RPM packages.
+....
+cp CRUNCHY-GPG-KEY.public  $GOPATH/src/github.com/crunchydata/crunchy-watch
+cp crunchypg*.repo $GOPATH/src/github.com/crunchydata/crunchy-watch
+....
+
 ....
 make docker-image
 ....
