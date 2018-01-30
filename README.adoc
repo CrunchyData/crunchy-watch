@@ -318,13 +318,13 @@ variable which indicates which version of the container you will pull down and
 execute, for example:
 
 ....
-$> export CCP_IMAGE_TAG=centos7-9.6.5-1.7.0
+$> export CCP_IMAGE_TAG=centos7-10.1-1.7.1
 $> ./run.sh
 ....
 
 Or,
 
 ....
-$> CCP_IMAGE_TAG=centos7-9.6.5-1.7.1 ./run.sh
+$> CCP_IMAGE_TAG=centos7-10.1-1.7.1 ./run.sh
 ....
 
