@@ -8,6 +8,7 @@ import (
 	config "github.com/spf13/viper"
 
 	"github.com/crunchydata/crunchy-watch/util"
+	"golang.org/x/text/unicode/bidi"
 )
 
 /*
@@ -91,10 +92,12 @@ func latestStrategy() (string, error) {
 	}
 
 	var value uint64 = 0
-	var replicas [len(podList.Items)]ReplicaInfoName
+	var replicas []ReplicaInfoName
+	var replicaInfoName ReplicaInfoName
+	var replicaInfo *util.ReplicationInfo
+
 	var i=0
 
-	selectedReplica := replicas[0]
 	// Determine current replication status information for each replica
 	for _, p := range podList.Items {
 
@@ -107,11 +110,14 @@ func latestStrategy() (string, error) {
 			config.GetString("CRUNCHY_WATCH_DATABASE"),
 		)
 
-		replicas[i].ReplicationInfo, err = util.GetReplicationInfo(target)
-		replicas[i].Name = p.Name
+		replicaInfo, err = util.GetReplicationInfo(target)
+		replicaInfoName = ReplicaInfoName{ replicaInfo, p.Name}
+		replicaInfoName.Name = p.Name
+		replicas = append(replicas, replicaInfoName)
 
 	}
 
+	selectedReplica := replicas[0]
 	for _, replica := range replicas {
 		if replica.ReceiveLocation > value {
 			value = replica.ReceiveLocation
