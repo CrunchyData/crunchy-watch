@@ -95,8 +95,6 @@ func latestStrategy() (string, error) {
 	var replicaInfoName ReplicaInfoName
 	var replicaInfo *util.ReplicationInfo
 
-	var i=0
-
 	// Determine current replication status information for each replica
 	for _, p := range podList.Items {
 
