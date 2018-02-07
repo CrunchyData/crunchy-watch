@@ -183,4 +183,8 @@ func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	flags.String(f, OSFailoverStrategy, "default")
 }
 
+func (h failoverHandler) Initialize() error {
+	return nil
+}
+
 var FailoverHandler failoverHandler

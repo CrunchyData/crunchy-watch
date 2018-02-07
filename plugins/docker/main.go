@@ -15,5 +15,8 @@ func (h failoverHandler) Failover() error {
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	// No docker specific flags
 }
+func (h failoverHandler) Initialize() error {
+	return nil
+}
 
 var FailoverHandler failoverHandler

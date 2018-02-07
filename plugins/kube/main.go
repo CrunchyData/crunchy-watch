@@ -11,6 +11,9 @@ import (
 	config "github.com/spf13/viper"
 
 	"github.com/crunchydata/crunchy-watch/flags"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type failoverHandler struct{}
@@ -30,6 +33,9 @@ var (
 		Description: "the kubernetes failover strategy",
 	}
 )
+
+var client  *kubernetes.Clientset
+var restConfig *rest.Config
 
 var failoverStrategies = []string{
 	"default",
@@ -54,86 +60,6 @@ func getReplica() (string, error) {
 	}
 }
 
-func relabelReplica(replica string) error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(kubectlCmd,
-		"label",
-		"pod",
-		"--overwrite=true",
-		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
-		replica,
-		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
-
-func deletePrimaryPod() error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(kubectlCmd,
-		"delete",
-		"pod",
-		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
-		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
-
-func promoteReplica(replica string) error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(kubectlCmd,
-		"exec",
-		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
-		replica,
-		"touch",
-		"/tmp/pg-failover-trigger",
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
 
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
@@ -141,7 +67,7 @@ func (h failoverHandler) Failover() error {
 
 	// shoot the old primary in the head
 	log.Info("Deleting existing primary...")
-	err := deletePrimaryPod()
+	err := deletePrimaryPod(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
 	if err != nil {
 		log.Error(err)
@@ -161,7 +87,7 @@ func (h failoverHandler) Failover() error {
 
 	// Promote replica to be new primary.
 	log.Info("Promoting failover replica...")
-	err = promoteReplica(replica)
+	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica)
 
 	if err != nil {
 		log.Error("An error occurred while promoting the failover replica")
@@ -170,7 +96,7 @@ func (h failoverHandler) Failover() error {
 
 	// Change labels so that the replica becomes the new primary.
 	log.Info("Relabeling failover replica...")
-	err = relabelReplica(replica)
+	err = relabelReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica, config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
 	if err != nil {
 		log.Error("An error occurred while relabeling the failover replica")
@@ -180,9 +106,32 @@ func (h failoverHandler) Failover() error {
 	return nil
 }
 
+
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	flags.String(f, KubeNamespace, "default")
 	flags.String(f, KubeFailoverStrategy, "default")
+}
+
+func (h failoverHandler) Initialize() error {
+	cfg, err := buildConfig("/Users/davec/.minikube/kubeconfig")
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	c,err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	client = c
+	return nil
+}
+
+func buildConfig(kubeconfig string) (*rest.Config, error) {
+	if kubeconfig != "" {
+		return clientcmd.BuildConfigFromFlags("", kubeconfig)
+	}
+	return rest.InClusterConfig()
 }
 
 var FailoverHandler failoverHandler
