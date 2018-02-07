@@ -8,7 +8,6 @@ import (
 	config "github.com/spf13/viper"
 
 	"github.com/crunchydata/crunchy-watch/util"
-	"golang.org/x/text/unicode/bidi"
 )
 
 /*
