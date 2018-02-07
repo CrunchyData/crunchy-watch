@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"os/exec"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	config "github.com/spf13/viper"
 
 	"github.com/crunchydata/crunchy-watch/util"
-	"k8s.io/kubernetes/pkg/apis/core/pods"
 )
 
 /*
