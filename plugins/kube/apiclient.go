@@ -2,29 +2,13 @@ package main
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-
-	"k8s.io/client-go/tools/remotecommand"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"bytes"
 	"fmt"
-	"io"
 	log "github.com/sirupsen/logrus"
+	"github.com/crunchydata/crunchy-watch/util"
 )
 
-type ExecOptions struct {
-	Command []string
-
-	Namespace     string
-	PodName       string
-	ContainerName string
-
-	Stdin         io.Reader
-	CaptureStdout bool
-	CaptureStderr bool
-	// If false, whitespace in std{err,out} will be removed.
-	PreserveWhitespace bool
-}
 
 func deletePrimaryPod(namespace string, name string ) error {
 
@@ -44,10 +28,6 @@ get replica by namespace and name
  */
 func promoteReplica(namespace string, name string) error {
 
-	var (
-		execOut bytes.Buffer
-		execErr bytes.Buffer
-	)
 
 	pod, err := client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 
@@ -59,39 +39,12 @@ func promoteReplica(namespace string, name string) error {
 		return  fmt.Errorf("could not determine which container to use")
 	}
 
-	req := client.CoreV1().RESTClient().Post().
-		Resource("pods").
-		Name(pod.Name).
-		Namespace(pod.Namespace).
-		SubResource("exec")
 
-	req.VersionedParams(&apiv1.PodExecOptions{
-		Container: pod.Spec.Containers[0].Name,
-		Command:   []string{ "touch", "/tmp/pg-failover-trigger"},
-		Stdout:    true,
-		Stderr:    true,
-	}, scheme.ParameterCodec)
-
-	exec, err := remotecommand.NewSPDYExecutor(restConfig, "POST", req.URL())
-	if err != nil {
-		return  fmt.Errorf("failed to init executor: %v", err)
-	}
-
-	err = exec.Stream(remotecommand.StreamOptions{
-		Stdout:             &execOut,
-		Stderr:             &execErr,
-	})
+	err = util.Exec(restConfig, pod.Namespace, pod.Name, pod.Spec.Containers[0].Name, []string{ "touch", "/tmp/pg-failover-trigger"})
 
 	if err != nil {
 		return  fmt.Errorf("could not execute: %v", err)
 	}
-
-	if execErr.Len() > 0 {
-		log.Info(execErr.String())
-		return  fmt.Errorf("stderr: %v", execErr.String())
-	}
-
-	log.Info(execOut.String())
 
 	return err
 }
