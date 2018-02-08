@@ -18,7 +18,7 @@ package util
 import (
 	"bytes"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/gorilla/websocket"
 	"io"
 	"k8s.io/client-go/rest"
