@@ -167,7 +167,7 @@ func main() {
 
 		os.Exit(0)
 	}()
-
+	// TODO make sure args are > 1
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
 
