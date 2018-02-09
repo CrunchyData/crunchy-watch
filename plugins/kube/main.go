@@ -122,6 +122,7 @@ func (h failoverHandler) Initialize() error {
 		log.Error("An error occurred initializing the client")
 		return err
 	}
+	restConfig = cfg
 	c,err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		log.Error("An error occurred initializing the client")
@@ -133,8 +134,10 @@ func (h failoverHandler) Initialize() error {
 
 func buildConfig(kubeconfig string) (*rest.Config, error) {
 	if kubeconfig != "" {
+		log.Debugf("building config from flags %s\n", kubeConfig)
 		return clientcmd.BuildConfigFromFlags("", kubeconfig)
 	}
+	log.Debug("building config in cluster\n")
 	return rest.InClusterConfig()
 }
 

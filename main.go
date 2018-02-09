@@ -167,21 +167,21 @@ func main() {
 
 		os.Exit(0)
 	}()
+
+	log.Info("Kubernetes Service Host:Port is %s:%s", os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT"))
+
 	// TODO make sure args are > 1
+	if (len(os.Args) < 1 ){
+		errorExit()
+	}
+
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
 
 	// Check that platform is valid.
 	if !validPlatform {
-		log.Error("Usage: crunchy-watch <platform> [flags]")
 		log.Errorf("Error: '%s' is not a valid platform\n\n", platform)
-		log.Error("Valid platform options are:")
-
-		for _, p := range platforms {
-			log.Errorf(" - %s", p)
-		}
-
-		os.Exit(1)
+		errorExit()
 	}
 
 	// Load platform module
@@ -292,3 +292,14 @@ func main() {
 		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
 	}
 }
+func errorExit() {
+	log.Error("Usage: crunchy-watch <platform> [flags]")
+	log.Error("Valid platform options are:")
+
+	for _, p := range platforms {
+		log.Errorf(" - %s", p)
+	}
+
+	os.Exit(1)
+}
+
