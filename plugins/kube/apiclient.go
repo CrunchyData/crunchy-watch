@@ -58,6 +58,11 @@ func relabelReplica(namespace string, replica string, primary string) error {
 		return err
 	}
 
+	for label := range p.Labels {
+		log.Debugf("label: %s ", label)
+	}
+
+	p.Labels["name"] = primary
 	p,err = podsClient.Update(&apiv1.Pod {
 		p.TypeMeta,
 		p.ObjectMeta,
