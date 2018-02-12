@@ -1,16 +1,15 @@
 package main
 
 import (
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"bytes"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/crunchydata/crunchy-watch/util"
+	log "github.com/sirupsen/logrus"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-
-func deletePrimaryPod(namespace string, name string ) error {
+func deletePrimaryPod(namespace string, name string) error {
 
 	podsClient := client.CoreV1().Pods(namespace)
 	err := podsClient.Delete(name, nil)
@@ -25,25 +24,24 @@ func deletePrimaryPod(namespace string, name string ) error {
 
 /*
 get replica by namespace and name
- */
+*/
 func promoteReplica(namespace string, name string) error {
-
 
 	pod, err := client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 
 	if err != nil {
-		return  fmt.Errorf("could not get pod info: %v", err)
+		return fmt.Errorf("could not get pod info: %v", err)
 	}
 
 	if len(pod.Spec.Containers) != 1 {
-		return  fmt.Errorf("could not determine which container to use")
+		return fmt.Errorf("could not determine which container to use")
 	}
 
-	log.Info("using exec")
-	err = util.Exec(restConfig, pod.Namespace, pod.Name, pod.Spec.Containers[0].Name, []string{ "touch", "/tmp/pg-failover-trigger"})
+	log.Debug("using exec")
+	err = util.Exec(restConfig, pod.Namespace, pod.Name, pod.Spec.Containers[0].Name, []string{"touch", "/tmp/pg-failover-trigger"})
 
 	if err != nil {
-		return  fmt.Errorf("could not execute: %v", err)
+		return fmt.Errorf("could not execute: %v", err)
 	}
 
 	return err
@@ -51,7 +49,7 @@ func promoteReplica(namespace string, name string) error {
 
 func relabelReplica(namespace string, replica string, primary string) error {
 	podsClient := client.CoreV1().Pods(namespace)
-	p,err := podsClient.Get(replica,metav1.GetOptions{})
+	p, err := podsClient.Get(replica, metav1.GetOptions{})
 
 	if err != nil {
 		log.Error(err.Error())
@@ -63,13 +61,12 @@ func relabelReplica(namespace string, replica string, primary string) error {
 	}
 
 	p.Labels["name"] = primary
-	p,err = podsClient.Update(&apiv1.Pod {
+	p, err = podsClient.Update(&apiv1.Pod{
 		p.TypeMeta,
 		p.ObjectMeta,
 		p.Spec,
 		p.Status,
 	})
-
 
 	if err != nil {
 
@@ -83,7 +80,7 @@ func relabelReplica(namespace string, replica string, primary string) error {
 func getPod(namespace string, name string) (error, *apiv1.Pod) {
 
 	podsClient := client.CoreV1().Pods(namespace)
-	p,err := podsClient.Get(name,metav1.GetOptions{})
+	p, err := podsClient.Get(name, metav1.GetOptions{})
 
 	if err != nil {
 		log.Error(err.Error())
@@ -91,7 +88,7 @@ func getPod(namespace string, name string) (error, *apiv1.Pod) {
 	}
 	return err, p
 }
-func getPods(namespace string, name *string, selectors map[string]string )(*apiv1.PodList, error) {
+func getPods(namespace string, name *string, selectors map[string]string) (*apiv1.PodList, error) {
 
 	var b bytes.Buffer
 	var options string
@@ -111,10 +108,8 @@ func getPods(namespace string, name *string, selectors map[string]string )(*apiv
 	options = b.String()
 
 	podsClient := client.CoreV1().Pods(namespace)
-	return podsClient.List( metav1.ListOptions{
+	return podsClient.List(metav1.ListOptions{
 		LabelSelector: options,
 	})
-
-
 
 }

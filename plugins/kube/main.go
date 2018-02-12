@@ -30,14 +30,14 @@ var (
 		Description: "the kubernetes failover strategy",
 	}
 	kubeConfig = flags.FlagInfo{
-		Namespace: "kubernetes",
-		Name:"kube-config-file",
-		EnvVar:"CRUNCHY_KUBE_CONFIG_FILE",
-		Description:"kubernetes client config file",
+		Namespace:   "kubernetes",
+		Name:        "kube-config-file",
+		EnvVar:      "CRUNCHY_KUBE_CONFIG_FILE",
+		Description: "kubernetes client config file",
 	}
 )
 
-var client  *kubernetes.Clientset
+var client *kubernetes.Clientset
 var restConfig *rest.Config
 
 var failoverStrategies = []string{
@@ -62,7 +62,6 @@ func getReplica() (string, error) {
 		return "", errors.New("invalid kubernetes failover strategy")
 	}
 }
-
 
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
@@ -109,7 +108,6 @@ func (h failoverHandler) Failover() error {
 	return nil
 }
 
-
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	flags.String(f, KubeNamespace, "default")
 	flags.String(f, KubeFailoverStrategy, "default")
@@ -123,7 +121,7 @@ func (h failoverHandler) Initialize() error {
 		return err
 	}
 	restConfig = cfg
-	c,err := kubernetes.NewForConfig(cfg)
+	c, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		log.Error("An error occurred initializing the client")
 		return err

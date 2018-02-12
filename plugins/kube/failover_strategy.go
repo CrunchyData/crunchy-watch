@@ -12,17 +12,16 @@ import (
 
 /*
 	return the name of the first pod with the name=CRUNCHY_WATCH_REPLICA label
- */
+*/
 func defaultStrategy() (string, error) {
 
-
-	selectors := map[string]string{"name":config.GetString("CRUNCHY_WATCH_REPLICA")}
+	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA")}
 
 	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
-		return "",nil
+		return "", nil
 	}
 
 	// If not found then return an error
@@ -40,16 +39,16 @@ func defaultStrategy() (string, error) {
 	return the name of the first pod named with CRUNCHY_WATCH_REPLICA
 	and replicatype trigger
 	if nothing is found then use the default strategy
- */
+*/
 func labelStrategy() (string, error) {
 
-	selectors := map[string]string{"name":config.GetString("CRUNCHY_WATCH_REPLICA"), "replicatype":"trigger"}
+	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA"), "replicatype": "trigger"}
 
 	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
-		return "",nil
+		return "", nil
 	}
 
 	// If no 'trigger' replicas were found, then fall back to the default strategy.
@@ -63,13 +62,13 @@ func labelStrategy() (string, error) {
 }
 
 func latestStrategy() (string, error) {
-	selectors := map[string]string{"name":config.GetString("CRUNCHY_WATCH_REPLICA")}
+	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA")}
 
 	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
-		return "",nil
+		return "", nil
 	}
 
 	// If not found then return an error
@@ -83,7 +82,6 @@ func latestStrategy() (string, error) {
 		pod := podList.Items[0]
 		return pod.Name, nil
 	}
-
 
 	type ReplicaInfoName struct {
 		*util.ReplicationInfo
@@ -108,7 +106,7 @@ func latestStrategy() (string, error) {
 		)
 
 		replicaInfo, err = util.GetReplicationInfo(target)
-		replicaInfoName = ReplicaInfoName{ replicaInfo, p.Name}
+		replicaInfoName = ReplicaInfoName{replicaInfo, p.Name}
 		replicaInfoName.Name = p.Name
 		replicas = append(replicas, replicaInfoName)
 
