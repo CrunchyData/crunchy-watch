@@ -168,9 +168,7 @@ func main() {
 		os.Exit(0)
 	}()
 
-	log.Info("Kubernetes Service Host:Port is %s:%s", os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT"))
 
-	// TODO make sure args are > 1
 	if (len(os.Args) < 1 ){
 		errorExit()
 	}
