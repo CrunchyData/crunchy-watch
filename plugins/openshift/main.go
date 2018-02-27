@@ -90,6 +90,7 @@ func deletePrimaryPod() error {
 		"delete",
 		"pod",
 		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
+		"-l",
 		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
 	)
 
