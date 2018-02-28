@@ -17,148 +17,69 @@ package util
 
 import (
 	"bytes"
-	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/gorilla/websocket"
+//	log "github.com/sirupsen/logrus"
 	"io"
-	"k8s.io/client-go/rest"
-	"net/http"
+	"strings"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/remotecommand"
 	"net/url"
 )
 
-// RoundTripCallback ...
-type RoundTripCallback func(conn *websocket.Conn, resp *http.Response, err error) error
+// ExecOptions passed to ExecWithOptions
+type ExecOptions struct {
+	Command []string
 
-// WebsocketRoundTripper ...
-type WebsocketRoundTripper struct {
-	Dialer *websocket.Dialer
-	Do     RoundTripCallback
+	Namespace     string
+	PodName       string
+	ContainerName string
+
+	Stdin         io.Reader
+	CaptureStdout bool
+	CaptureStderr bool
+	// If false, whitespace in std{err,out} will be removed.
+	PreserveWhitespace bool
+}
+func ExecWithOptions(config *restclient.Config,  client kubernetes.Clientset, options ExecOptions) (string, string, error) {
+
+	const tty = false
+
+	req := client.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Name(options.PodName).
+		Namespace(options.Namespace).
+		SubResource("exec").
+		Param("container", options.ContainerName)
+
+	req.VersionedParams(&apiv1.PodExecOptions{
+		Container: options.ContainerName,
+		Command:   options.Command,
+		Stdin:     options.Stdin != nil,
+		Stdout:    options.CaptureStdout,
+		Stderr:    options.CaptureStderr,
+		TTY:       tty,
+	}, scheme.ParameterCodec)
+
+	var stdout, stderr bytes.Buffer
+	err := execute("POST", req.URL(), config, options.Stdin, &stdout, &stderr, tty)
+
+	if options.PreserveWhitespace {
+		return stdout.String(), stderr.String(), err
+	}
+	return strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err
 }
 
-// Exec execs the cmd
-func Exec(config *rest.Config, namespace, podname, containername string, cmd []string) error {
-
-	wrappedRoundTripper, err := roundTripperFromConfig(config)
+func execute(method string, url *url.URL, config *restclient.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool) error {
+	exec, err := remotecommand.NewSPDYExecutor(config, method, url)
 	if err != nil {
-		log.Error(err.Error())
 		return err
 	}
-
-	req, err := requestFromConfig(config, podname, containername, namespace, cmd)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	// Send the request and let the callback do its work
-	_, err = wrappedRoundTripper.RoundTrip(req)
-
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	return err
-
-}
-
-// RoundTrip ...
-func (d *WebsocketRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	conn, resp, err := d.Dialer.Dial(r.URL.String(), r.Header)
-	if err == nil {
-		defer conn.Close()
-	}
-	return resp, d.Do(conn, resp, err)
-}
-
-// roundTripperFromConfig  ...
-func roundTripperFromConfig(config *rest.Config) (http.RoundTripper, error) {
-
-	// Configure TLS
-	tlsConfig, err := rest.TLSConfigFor(config)
-	if err != nil {
-		return nil, err
-	}
-
-	// Configure the websocket dialer
-	dialer := &websocket.Dialer{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: tlsConfig,
-	}
-
-	// Create a roundtripper which will pass in the final underlying websocket connection to a callback
-	rt := &WebsocketRoundTripper{
-		Do:     WebsocketCallback,
-		Dialer: dialer,
-	}
-
-	// Make sure we inherit all relevant security headers
-	return rest.HTTPWrappersForConfig(config, rt)
-}
-
-// requestFromConfig ...
-func requestFromConfig(config *rest.Config, pod string, container string, namespace string, cmd []string) (*http.Request, error) {
-
-	log.Info("config.Host is " + config.Host)
-	u, err := url.Parse(config.Host)
-	if err != nil {
-		return nil, err
-	}
-
-	switch u.Scheme {
-	case "https":
-		u.Scheme = "wss"
-	case "http":
-		u.Scheme = "ws"
-	default:
-		return nil, fmt.Errorf("Malformed URL %s", u.String())
-	}
-
-	u.Path = fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/exec", namespace, pod)
-	params := url.Values{}
-	for _, v := range cmd {
-		params.Add("command", v)
-	}
-	params.Add("container", container)
-	params.Add("stderr", "true")
-	params.Add("stdout", "true")
-
-	u.RawQuery = params.Encode()
-
-	log.Info(u.String())
-
-	req := &http.Request{
-		Method: http.MethodGet,
-		URL:    u,
-	}
-
-	return req, nil
-}
-
-// WebsocketCallback ...
-func WebsocketCallback(ws *websocket.Conn, resp *http.Response, err error) error {
-
-	if err != nil {
-		if resp != nil && resp.StatusCode != http.StatusOK {
-			buf := new(bytes.Buffer)
-			buf.ReadFrom(resp.Body)
-			log.Error(err.Error())
-			return err
-		}
-		log.Error(err.Error())
-		return err
-	}
-
-	txt := ""
-	for {
-		_, body, err := ws.ReadMessage()
-		if err != nil {
-			log.Info(txt)
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}
-		txt = txt + string(body)
-	}
+	return exec.Stream(remotecommand.StreamOptions{
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
+		Tty:    tty,
+	})
 }

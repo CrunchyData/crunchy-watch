@@ -37,7 +37,19 @@ func promoteReplica(namespace string, name string) error {
 		return fmt.Errorf("could not determine which container to use")
 	}
 
-	err = util.Exec(restConfig, pod.Namespace, pod.Name, pod.Spec.Containers[0].Name, []string{"touch", "/tmp/pg-failover-trigger"})
+
+
+	_, _, err  = util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
+		Command:        []string{"touch", "/tmp/pg-failover-trigger"},
+		Namespace:     pod.Namespace,
+		PodName:       pod.Name,
+		ContainerName: pod.Spec.Containers[0].Name,
+
+		Stdin:              nil,
+		CaptureStdout:      false,
+		CaptureStderr:      false,
+		PreserveWhitespace: false,
+	})
 
 	if err != nil {
 		return fmt.Errorf("could not execute: %v", err)
