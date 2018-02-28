@@ -23,6 +23,7 @@ var platforms = []string{
 }
 
 var flagSet *flag.FlagSet
+var handler FailoverHandler
 
 // Define common flag information
 var (
@@ -159,12 +160,15 @@ func main() {
 		signal.Notify(ch,
 			syscall.SIGINT,
 			syscall.SIGTERM,
+			syscall.SIGUSR1,
 		)
 
 		log.Info("Waiting for signal...")
 		s := <-ch
 		log.Infof("Received signal: %s", s)
+		if ( s == syscall.SIGUSR1 ) {
 
+		}
 		os.Exit(0)
 	}()
 
@@ -184,7 +188,7 @@ func main() {
 
 	// Load platform module
 	log.Infof("Loading Platform Module: %s", platform)
-	handler := loadPlatformModule(platform)
+	handler = loadPlatformModule(platform)
 	// Allow platform module to add it's command-line flags
 	handler.SetFlags(flagSet)
 
@@ -251,37 +255,7 @@ func main() {
 			// If max failure has been exceeded then process failover
 			if failures > config.GetInt(MaxFailures.EnvVar) {
 
-				// process failover pre-hook
-				preHook := config.GetString(PreHook.EnvVar)
-				if preHook != "" {
-					log.Infof("Executing pre-hook: %s", preHook)
-					err := execute(preHook)
-					if err != nil {
-						log.Error("Could not execute pre-hook")
-						log.Error(err.Error())
-					}
-				}
-
-				// Process failover
-				err = handler.Failover()
-
-				if err != nil {
-					log.Errorf("Failover process failed: %s", err.Error())
-				}
-
-				// Process failover post-hook
-				postHook := config.GetString(PostHook.EnvVar)
-				if postHook != "" {
-					log.Infof("Executing post-hook: %s", postHook)
-					err := execute(postHook)
-
-					if err != nil {
-						log.Error("Could not execute post-hook")
-						log.Error(err.Error())
-
-					}
-				}
-
+				failover()
 				// reset retry count.
 				failures = 0
 			}
@@ -289,6 +263,46 @@ func main() {
 
 		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
 	}
+}
+
+func failover() {
+
+	// process failover pre-hook
+	preHook := config.GetString(PreHook.EnvVar)
+	if preHook != "" {
+		log.Infof("Executing pre-hook: %s", preHook)
+		err := execute(preHook)
+		if err != nil {
+			log.Error("Could not execute pre-hook")
+			log.Error(err.Error())
+		}
+	}
+
+	if  handler != nil {
+
+		// Process failover
+		err := handler.Failover()
+
+		if err != nil {
+			log.Errorf("Failover process failed: %s", err.Error())
+		}
+	} else {
+		log.Error("Failover process failed handler not initialized yet")
+	}
+
+	// Process failover post-hook
+	postHook := config.GetString(PostHook.EnvVar)
+	if postHook != "" {
+		log.Infof("Executing post-hook: %s", postHook)
+		err := execute(postHook)
+
+		if err != nil {
+			log.Error("Could not execute post-hook")
+			log.Error(err.Error())
+
+		}
+	}
+
 }
 func errorExit() {
 	log.Error("Usage: crunchy-watch <platform> [flags]")
