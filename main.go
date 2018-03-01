@@ -157,7 +157,7 @@ func init() {
 
 func main() {
 	var pause bool
-	var target string
+	var pgconstr string
 
 	go func() {
 		ch := make(chan os.Signal, 1)
@@ -172,7 +172,7 @@ func main() {
 		log.Infof("Received signal: %s", s)
 		if  s == syscall.SIGUSR1  {
 			pause=true
-			failover(target)
+			failover(pgconstr)
 			pause=false
 		} else {
 			os.Exit(0)
@@ -235,7 +235,7 @@ func main() {
 	timeout := config.GetDuration(Timeout.EnvVar)
 
 	// Construct connection string to primary
-	target = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
+	target := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
 		config.GetString(Username.EnvVar),
 		config.GetString(Password.EnvVar),
 		config.GetString(Primary.EnvVar),
@@ -243,7 +243,14 @@ func main() {
 		config.GetString(Database.EnvVar),
 		int(timeout.Seconds()),
 	)
-
+	pgconstr = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
+		config.GetString("postgres"),
+		config.GetString(Password.EnvVar),
+		config.GetString(Primary.EnvVar),
+		config.GetInt(PrimaryPort.EnvVar),
+		config.GetString(Database.EnvVar),
+		int(timeout.Seconds()),
+	)
 	// Watch
 	failures := 0
 
@@ -266,7 +273,7 @@ func main() {
 				// If max failure has been exceeded then process failover
 				if failures > config.GetInt(MaxFailures.EnvVar) {
 
-					failover(target)
+					failover(pgconstr)
 					// reset retry count.
 					failures = 0
 				}
