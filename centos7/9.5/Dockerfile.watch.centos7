@@ -3,9 +3,9 @@ FROM centos:7
 LABEL Name="crunchydata/watch" \
 	Vendor="Crunchy Data Solutions" \
 	Version="7.3" \
-	PostgresFullVersion="9.5.11" \
+	PostgresFullVersion="9.5.12" \
 	PostgresVersion="9.5" \
-	Release="1.8.0" \
+	Release="1.8.1" \
 	Url="https://crunchydata.com" \
 	Summary="" \
 	io.k8s.description="watch container" \
