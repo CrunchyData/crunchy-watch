@@ -63,7 +63,7 @@ func getReplica() (string, error) {
 	}
 }
 
-func (h failoverHandler) Failover() error {
+func (h failoverHandler) Failover(dataDirectory string ) error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(KubeFailoverStrategy.EnvVar))
 
@@ -89,9 +89,10 @@ func (h failoverHandler) Failover() error {
 
 	// Promote replica to be new primary.
 	log.Info("Promoting failover replica...")
-	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica)
+	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica, dataDirectory)
 
 	if err != nil {
+
 		log.Error("An error occurred while promoting the failover replica")
 		return err
 	}

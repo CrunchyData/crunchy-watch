@@ -135,7 +135,7 @@ func promoteReplica(replica string) error {
 	return err
 }
 
-func (h failoverHandler) Failover() error {
+func (h failoverHandler) Failover(dataDirectory string) error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(OSFailoverStrategy.EnvVar))
 

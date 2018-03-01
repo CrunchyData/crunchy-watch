@@ -13,6 +13,7 @@ import (
 
 	"github.com/crunchydata/crunchy-watch/flags"
 	"github.com/crunchydata/crunchy-watch/util"
+	"sync/atomic"
 )
 
 // Valid supported platforms.
@@ -125,7 +126,7 @@ const (
 )
 
 type FailoverHandler interface {
-	Failover() error
+	Failover(dataDirectory string ) error
 	SetFlags(*flag.FlagSet)
 	Initialize() error
 }
@@ -155,6 +156,9 @@ func init() {
 }
 
 func main() {
+	var pause bool
+	var target string
+
 	go func() {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch,
@@ -166,16 +170,21 @@ func main() {
 		log.Info("Waiting for signal...")
 		s := <-ch
 		log.Infof("Received signal: %s", s)
-		if ( s == syscall.SIGUSR1 ) {
-
+		if  s == syscall.SIGUSR1  {
+			pause=true
+			failover(target)
+			pause=false
+		} else {
+			os.Exit(0)
 		}
-		os.Exit(0)
 	}()
 
 
 	if (len(os.Args) < 1 ){
 		errorExit()
 	}
+
+	log.SetLevel(log.DebugLevel)
 
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
@@ -226,7 +235,7 @@ func main() {
 	timeout := config.GetDuration(Timeout.EnvVar)
 
 	// Construct connection string to primary
-	target := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
+	target = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
 		config.GetString(Username.EnvVar),
 		config.GetString(Password.EnvVar),
 		config.GetString(Primary.EnvVar),
@@ -239,70 +248,86 @@ func main() {
 	failures := 0
 
 	for {
-		log.Infof("Health Checking: '%s'", config.GetString(Primary.EnvVar))
-		err := util.HealthCheck(target)
 
-		if err == nil {
-			log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
-		} else {
-			failures += 1
+		if pause == false {
+			log.Infof("Health Checking: '%s'", config.GetString(Primary.EnvVar))
+			err := util.HealthCheck(target)
 
-			log.Errorf("Could not reach '%s' (Attempt: %d)",
-				config.GetString(Primary.EnvVar),
-				failures,
-			)
+			if err == nil {
+				log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
+			} else {
+				failures += 1
 
-			// If max failure has been exceeded then process failover
-			if failures > config.GetInt(MaxFailures.EnvVar) {
+				log.Errorf("Could not reach '%s' (Attempt: %d)",
+					config.GetString(Primary.EnvVar),
+					failures,
+				)
 
-				failover()
-				// reset retry count.
-				failures = 0
+				// If max failure has been exceeded then process failover
+				if failures > config.GetInt(MaxFailures.EnvVar) {
+
+					failover(target)
+					// reset retry count.
+					failures = 0
+				}
+			}
+		}else {
+			log.Info("Health Checking paused")
+		}
+		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
+
+	}
+}
+var inFailOver int32 = 0
+
+func failover(target string) {
+
+
+	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
+		return
+	}
+
+	dataDirectory,err := util.DataDirectory(target)
+
+	if err == nil {
+
+		// process failover pre-hook
+		preHook := config.GetString(PreHook.EnvVar)
+		if preHook != "" {
+			log.Infof("Executing pre-hook: %s", preHook)
+			err := execute(preHook)
+			if err != nil {
+				log.Error("Could not execute pre-hook")
+				log.Error(err.Error())
 			}
 		}
 
-		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
-	}
-}
+		if handler != nil {
 
-func failover() {
+			// Process failover
+			err := handler.Failover(dataDirectory)
 
-	// process failover pre-hook
-	preHook := config.GetString(PreHook.EnvVar)
-	if preHook != "" {
-		log.Infof("Executing pre-hook: %s", preHook)
-		err := execute(preHook)
-		if err != nil {
-			log.Error("Could not execute pre-hook")
-			log.Error(err.Error())
+			if err != nil {
+				log.Errorf("Failover process failed: %s", err.Error())
+			}
+		} else {
+			log.Error("Failover process failed handler not initialized yet")
+		}
+
+		// Process failover post-hook
+		postHook := config.GetString(PostHook.EnvVar)
+		if postHook != "" {
+			log.Infof("Executing post-hook: %s", postHook)
+			err := execute(postHook)
+
+			if err != nil {
+				log.Error("Could not execute post-hook")
+				log.Error(err.Error())
+
+			}
 		}
 	}
-
-	if  handler != nil {
-
-		// Process failover
-		err := handler.Failover()
-
-		if err != nil {
-			log.Errorf("Failover process failed: %s", err.Error())
-		}
-	} else {
-		log.Error("Failover process failed handler not initialized yet")
-	}
-
-	// Process failover post-hook
-	postHook := config.GetString(PostHook.EnvVar)
-	if postHook != "" {
-		log.Infof("Executing post-hook: %s", postHook)
-		err := execute(postHook)
-
-		if err != nil {
-			log.Error("Could not execute post-hook")
-			log.Error(err.Error())
-
-		}
-	}
-
+	inFailOver=0
 }
 func errorExit() {
 	log.Error("Usage: crunchy-watch <platform> [flags]")

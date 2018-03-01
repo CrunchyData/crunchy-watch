@@ -8,7 +8,7 @@ type failoverHandler struct{}
 
 func init() {}
 
-func (h failoverHandler) Failover() error {
+func (h failoverHandler) Failover(dataDirectory string) error {
 	return nil
 }
 

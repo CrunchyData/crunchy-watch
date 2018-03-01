@@ -25,7 +25,7 @@ func deletePrimaryPod(namespace string, name string) error {
 /*
 get replica by namespace and name
 */
-func promoteReplica(namespace string, name string) error {
+func promoteReplica(namespace string, name string, dataDirectory string) error {
 
 	pod, err := client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 
@@ -38,20 +38,26 @@ func promoteReplica(namespace string, name string) error {
 	}
 
 
+	var stderr string
 
-	_, _, err  = util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
-		Command:        []string{"touch", "/tmp/pg-failover-trigger"},
+	cmd := []string{fmt.Sprintf("/usr/pgsql-10/bin/pg_ctl promote", dataDirectory)}
+
+	log.Debugf("executing cmd: %s on pod %s in namespace %s container: %s", cmd, pod.Name, pod.Namespace, pod.Spec.Containers[0].Name )
+
+	_, stderr, err  = util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
+		Command:        cmd,
 		Namespace:     pod.Namespace,
 		PodName:       pod.Name,
 		ContainerName: pod.Spec.Containers[0].Name,
 
 		Stdin:              nil,
 		CaptureStdout:      false,
-		CaptureStderr:      false,
+		CaptureStderr:      true,
 		PreserveWhitespace: false,
 	})
 
 	if err != nil {
+		log.Errorf("Error executing cmd: %s stderr: %s", cmd, stderr)
 		return fmt.Errorf("could not execute: %v", err)
 	}
 

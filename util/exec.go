@@ -77,7 +77,6 @@ func execute(method string, url *url.URL, config *restclient.Config, stdin io.Re
 		return err
 	}
 	return exec.Stream(remotecommand.StreamOptions{
-		Stdin:  stdin,
 		Stdout: stdout,
 		Stderr: stderr,
 		Tty:    tty,
