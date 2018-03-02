@@ -40,24 +40,24 @@ func promoteReplica(namespace string, name string, dataDirectory string) error {
 
 	var stderr string
 
-	cmd := []string{fmt.Sprintf("/usr/pgsql-10/bin/pg_ctl promote", dataDirectory)}
+	cmd := []string{fmt.Sprintf("/usr/pgsql-10/bin/pg_ctl -D %s promote", dataDirectory)}
 
 	log.Debugf("executing cmd: %s on pod %s in namespace %s container: %s", cmd, pod.Name, pod.Namespace, pod.Spec.Containers[0].Name )
 
-	_, stderr, err  = util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
+	stdout, stderr, err  := util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
 		Command:        cmd,
 		Namespace:     pod.Namespace,
 		PodName:       pod.Name,
 		ContainerName: pod.Spec.Containers[0].Name,
 
 		Stdin:              nil,
-		CaptureStdout:      false,
+		CaptureStdout:      true,
 		CaptureStderr:      true,
 		PreserveWhitespace: false,
 	})
 
 	if err != nil {
-		log.Errorf("Error executing cmd: %s stderr: %s", cmd, stderr)
+		log.Errorf("Error executing cmd: %s stderr: %s stdout: %s", cmd, stderr, stdout)
 		return fmt.Errorf("could not execute: %v", err)
 	}
 
