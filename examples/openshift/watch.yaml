@@ -27,6 +27,8 @@ objects:
         - name: watch
           image: "crunchydata/crunchy-watch:$CCP_IMAGE_TAG"
           env:
+            - name: CRUNCHY_DEBUG
+              value: "true"
             - name: CRUNCHY_WATCH_PLATFORM
               value: openshift
             - name: CRUNCHY_WATCH_OPENSHIFT_PROJECT

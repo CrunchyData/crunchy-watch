@@ -115,6 +115,10 @@ below.
 	| CRUNCHY_WATCH_POST_HOOK
 	|
 	| failover hook to execute after processing failover
+| --debug
+	| CRUNCHY_DEBUG
+	|
+	| when set to true, causes debug level messages to be output
 |===
 
 ==== Kubernetes

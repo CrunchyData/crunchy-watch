@@ -10,6 +10,8 @@ spec:
     - name: watch
       image: crunchydata/crunchy-watch:$CCP_IMAGE_TAG
       env:
+        - name: CRUNCHY_DEBUG
+          value: "true"
         - name: CRUNCHY_WATCH_PLATFORM
           value: kube
         - name: CRUNCHY_WATCH_PRIMARY
