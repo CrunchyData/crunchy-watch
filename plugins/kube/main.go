@@ -89,7 +89,7 @@ func (h failoverHandler) Failover(dataDirectory string ) error {
 
 	// Promote replica to be new primary.
 	log.Info("Promoting failover replica...")
-	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica, dataDirectory)
+	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica)
 
 	if err != nil {
 

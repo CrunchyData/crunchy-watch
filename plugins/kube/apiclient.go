@@ -25,7 +25,7 @@ func deletePrimaryPod(namespace string, name string) error {
 /*
 get replica by namespace and name
 */
-func promoteReplica(namespace string, name string, dataDirectory string) error {
+func promoteReplica(namespace string, name string) error {
 
 	pod, err := client.CoreV1().Pods(namespace).Get(name, metav1.GetOptions{})
 
@@ -40,7 +40,7 @@ func promoteReplica(namespace string, name string, dataDirectory string) error {
 
 	var stderr string
 
-	cmd := []string{fmt.Sprintf("/usr/pgsql-10/bin/pg_ctl -D %s promote", dataDirectory)}
+	cmd := []string{fmt.Sprintf("/opt/cpm/bin/promote.sh")}
 
 	log.Debugf("executing cmd: %s on pod %s in namespace %s container: %s", cmd, pod.Name, pod.Namespace, pod.Spec.Containers[0].Name )
 
