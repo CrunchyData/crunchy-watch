@@ -294,47 +294,41 @@ func failover(target string) {
 		return
 	}
 
-	dataDirectory,err := util.DataDirectory(target)
-
-	if err == nil {
-
-		// process failover pre-hook
-		preHook := config.GetString(PreHook.EnvVar)
-		if preHook != "" {
-			log.Infof("Executing pre-hook: %s", preHook)
-			err := execute(preHook)
-			if err != nil {
-				log.Error("Could not execute pre-hook")
-				log.Error(err.Error())
-			}
-		}
-
-		if handler != nil {
-
-			// Process failover
-			err := handler.Failover(dataDirectory)
-
-			if err != nil {
-				log.Errorf("Failover process failed: %s", err.Error())
-			}
-		} else {
-			log.Error("Failover process failed handler not initialized yet")
-		}
-
-		// Process failover post-hook
-		postHook := config.GetString(PostHook.EnvVar)
-		if postHook != "" {
-			log.Infof("Executing post-hook: %s", postHook)
-			err := execute(postHook)
-
-			if err != nil {
-				log.Error("Could not execute post-hook")
-				log.Error(err.Error())
-
-			}
+	// process failover pre-hook
+	preHook := config.GetString(PreHook.EnvVar)
+	if preHook != "" {
+		log.Infof("Executing pre-hook: %s", preHook)
+		err := execute(preHook)
+		if err != nil {
+			log.Error("Could not execute pre-hook")
+			log.Error(err.Error())
 		}
 	}
-	inFailOver=0
+
+	if handler != nil {
+
+		// Process failover
+		err := handler.Failover()
+
+		if err != nil {
+			log.Errorf("Failover process failed: %s", err.Error())
+		}
+	} else {
+		log.Error("Failover process failed handler not initialized yet")
+	}
+
+	// Process failover post-hook
+	postHook := config.GetString(PostHook.EnvVar)
+	if postHook != "" {
+		log.Infof("Executing post-hook: %s", postHook)
+		err := execute(postHook)
+
+		if err != nil {
+			log.Error("Could not execute post-hook")
+			log.Error(err.Error())
+
+		}
+	}
 }
 func errorExit() {
 	log.Error("Usage: crunchy-watch <platform> [flags]")
