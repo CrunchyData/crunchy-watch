@@ -1,6 +1,6 @@
 = watch (1)
-Jeff McCormick
-April 13, 2017
+Crunchy Data
+January 30, 2018
 == NAME
 watch - watch container image
 
@@ -34,4 +34,4 @@ The Red Hat Enterprise Linux version from which the container was built. For exa
 
 `Release=`
 
-The specific release number of the container. For example, Release="1.7.0"
+The specific release number of the container. For example, Release="1.8.1"

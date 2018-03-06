@@ -112,6 +112,13 @@ var (
 		Description: "failover pre-hook to execute before processing failover",
 	}
 
+	Debug = flags.FlagInfo{
+		Namespace:   "general",
+		Name:        "debug",
+		EnvVar:      "CRUNCHY_DEBUG",
+		Description: "when set to true, debug output is enabled",
+	}
+
 	PostHook = flags.FlagInfo{
 		Namespace:   "general",
 		Name:        "post-hook",
@@ -153,11 +160,21 @@ func init() {
 	flags.Duration(flagSet, FailoverWait, DefaultFailoverWait)
 	flags.String(flagSet, PreHook, "")
 	flags.String(flagSet, PostHook, "")
+	flags.String(flagSet, Debug, "")
 }
 
 func main() {
+
 	var pause bool
 	var pgconstr string
+
+
+	fmt.Println("env var debug value is [" + config.GetString(Debug.EnvVar) + "]")
+	if config.GetString(Debug.EnvVar) == "true" {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("debug flag set to true")
+	} 
+
 
 	go func() {
 		ch := make(chan os.Signal, 1)

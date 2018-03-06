@@ -1,5 +1,5 @@
 = Crunchy Watch
-v1.7.1, {docdate}
+v1.8.1, {docdate}
 
 image::docs/crunchy_logo.png?raw=true[]
 
@@ -115,6 +115,10 @@ below.
 	| CRUNCHY_WATCH_POST_HOOK
 	|
 	| failover hook to execute after processing failover
+| --debug
+	| CRUNCHY_DEBUG
+	|
+	| when set to true, causes debug level messages to be output
 |===
 
 ==== Kubernetes
@@ -158,10 +162,76 @@ accomplished using `make` and the provide Makefile.
  * Docker 1.12 or greater
  * Kubernetes client (kubectl) 1.7 or greater
  * https://www.openshift.org/download.html[Openshift client (oc) 3.6] or greater
- * https://github.com/Masterminds/glide[Glide 0.12] or greater
+ * https://github.com/golang/dep
 
 *Note:* The `$> make setup` target (below) will retrieve the requisite kubernetes and
 openshift client binaries.
+
+=== Centos Build Steps
+
+These steps assume your normal userid is *someuser* and 
+you are installing on a clean  minimal Centos7 install.
+
+==== Install Docker
+
+....
+sudo yum -y install docker
+sudo groupadd docker
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -a -G docker someuser
+newgrp docker
+docker ps
+....
+
+==== Install Build Dependencies
+
+....
+sudo yum -y install gettext git golang
+....
+
+==== Setup Project Settings and Structure
+
+....
+export GOPATH=$HOME/odev
+mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg
+mkdir -p $GOPATH/src/github.com/crunchydata/
+export PATH=$PATH:$GOPATH/bin
+export CCP_BASEOS=centos7
+export CCP_PGVERSION=10
+export CCP_PG_FULLVERSION=10.3
+cd $GOPATH/src/github.com/crunchydata
+git clone https://github.com/CrunchyData/crunchy-watch.git
+cd crunchy-watch
+....
+
+==== Get Project Dependencies
+
+....
+go get -u github.com/golang/dep/cmd/dep
+dep ensure
+make setup
+....
+
+==== Build from Source
+
+....
+make
+....
+
+==== Build the Docker Image
+
+NOTE:  To build the RHEL based image, you will need the Crunchy
+repo keys to be copied to the $GOPATH/src/github.com/crunchydata/crunchy-watch directory.   This is because the RHEL image is based on the 
+Crunchy RPM packages.
+....
+cp CRUNCHY-GPG-KEY.public  $GOPATH/src/github.com/crunchydata/crunchy-watch
+cp crunchypg*.repo $GOPATH/src/github.com/crunchydata/crunchy-watch
+....
+
+....
+make docker-image
+....
 
 === Targets
 
@@ -252,13 +322,13 @@ variable which indicates which version of the container you will pull down and
 execute, for example:
 
 ....
-$> export CCP_IMAGE_TAG=centos7-9.6.5-1.7.0
+$> export CCP_IMAGE_TAG=centos7-10.3-1.8.1
 $> ./run.sh
 ....
 
 Or,
 
 ....
-$> CCP_IMAGE_TAG=centos7-9.6.5-1.7.1 ./run.sh
+$> CCP_IMAGE_TAG=centos7-10.3-1.8.1 ./run.sh
 ....
 

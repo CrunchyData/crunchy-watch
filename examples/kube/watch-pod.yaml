@@ -10,6 +10,8 @@ spec:
     - name: watch
       image: crunchydata/crunchy-watch:$CCP_IMAGE_TAG
       env:
+        - name: CRUNCHY_DEBUG
+          value: "true"
         - name: CRUNCHY_WATCH_PLATFORM
           value: kube
         - name: CRUNCHY_WATCH_PRIMARY
@@ -27,7 +29,7 @@ spec:
         - name: CRUNCHY_WATCH_FAILOVER_WAIT
           value: 10s
         - name: CRUNCHY_WATCH_KUBE_NAMESPACE
-          value: demo
+          value: $CCP_NAMESPACE
         - name: CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY
           value: latest
         - name: CRUNCHY_WATCH_PRE_HOOK

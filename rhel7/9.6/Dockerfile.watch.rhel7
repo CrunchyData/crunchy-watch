@@ -2,14 +2,15 @@ FROM registry.access.redhat.com/rhel
 
 MAINTAINER Crunchy Data <support@crunchydata.com>
 
-LABEL Name="crunchydata/watch" \
-	Vendor="Crunchy Data Solutions" \
+LABEL name="crunchydata/watch" \
+	vendor="Crunchy Data Solutions" \
 	Version="7.3" \
 	PostgresVersion="9.6" \
-	PostgresFullVersion="9.6.6" \
-	Release="1.7.1" \
+	PostgresFullVersion="9.6.8" \
+	Release="1.8.1" \
 	Url="https://crunchydata.com" \
-	Summary="Watches the primary in a primary/replica deployment, triggering a failover when the primary can't be reached" \
+	description="Watches the primary in a primary/replica deployment, triggering a failover when the primary can't be reached" \
+	summary="Watches the primary in a primary/replica deployment, triggering a failover when the primary can't be reached" \
 	io.k8s.description="watch container" \
 	io.k8s.display-name="Crunchy Watch Container" \
 	io.openshift.expose-services="" \

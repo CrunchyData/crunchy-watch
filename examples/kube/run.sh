@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 Crunchy Data Solutions, Inc.
+# Copyright 2018 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,7 +26,7 @@ kubectl create -f $DIR/watch-sa.json
 
 kubectl create rolebinding pg-watcher-sa-edit \
   --clusterrole=edit \
-  --serviceaccount=demo:pg-watcher \
-  --namespace=demo
+  --serviceaccount=$CCP_NAMESPACE:pg-watcher \
+  --namespace=$CCP_NAMESPACE
 
 envsubst < $DIR/watch-pod.yaml | kubectl create -f -
