@@ -158,7 +158,7 @@ accomplished using `make` and the provide Makefile.
 
 === Requirements
 
- * Go 1.8 or greater
+ * Go 1.9 or greater
  * Docker 1.12 or greater
  * Kubernetes client (kubectl) 1.7 or greater
  * https://www.openshift.org/download.html[Openshift client (oc) 3.6] or greater
@@ -208,7 +208,7 @@ cd crunchy-watch
 ==== Get Project Dependencies
 
 ....
-go get -u github.com/golang/dep/cmd/dep
+curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 dep ensure
 make setup
 ....
