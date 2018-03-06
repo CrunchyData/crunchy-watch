@@ -37,15 +37,14 @@ func promoteReplica(namespace string, name string) error {
 		return fmt.Errorf("could not determine which container to use")
 	}
 
-
 	var stderr string
 
 	cmd := []string{fmt.Sprintf("/opt/cpm/bin/promote.sh")}
 
-	log.Debugf("executing cmd: %s on pod %s in namespace %s container: %s", cmd, pod.Name, pod.Namespace, pod.Spec.Containers[0].Name )
+	log.Debugf("executing cmd: %s on pod %s in namespace %s container: %s", cmd, pod.Name, pod.Namespace, pod.Spec.Containers[0].Name)
 
-	stdout, stderr, err  := util.ExecWithOptions(restConfig, *client,  util.ExecOptions{
-		Command:        cmd,
+	stdout, stderr, err := util.ExecWithOptions(restConfig, *client, util.ExecOptions{
+		Command:       cmd,
 		Namespace:     pod.Namespace,
 		PodName:       pod.Name,
 		ContainerName: pod.Spec.Containers[0].Name,

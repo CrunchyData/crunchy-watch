@@ -39,7 +39,7 @@ func HealthCheck(target string) error {
 
 	return nil
 }
-func DataDirectory( target string ) (string, error){
+func DataDirectory(target string) (string, error) {
 	con, err := sql.Open("postgres", target)
 
 	var dataDirectory string = ""
@@ -49,7 +49,7 @@ func DataDirectory( target string ) (string, error){
 	}
 	defer con.Close()
 
-	rs,err := con.Query("show data_directory")
+	rs, err := con.Query("show data_directory")
 
 	defer rs.Close()
 
@@ -59,10 +59,10 @@ func DataDirectory( target string ) (string, error){
 	}
 	for rs.Next() {
 		err = rs.Scan(&dataDirectory)
-		if  err != nil {
+		if err != nil {
 			log.Error(err)
-			return dataDirectory,err
+			return dataDirectory, err
 		}
 	}
-	return dataDirectory,err
+	return dataDirectory, err
 }

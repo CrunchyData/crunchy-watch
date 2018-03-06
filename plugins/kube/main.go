@@ -46,7 +46,6 @@ var failoverStrategies = []string{
 	"latest",
 }
 
-
 func getReplica() (string, error) {
 	switch config.GetString(KubeFailoverStrategy.EnvVar) {
 	case "default":
@@ -60,7 +59,7 @@ func getReplica() (string, error) {
 	}
 }
 
-func (h failoverHandler) Failover( ) error {
+func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(KubeFailoverStrategy.EnvVar))
 

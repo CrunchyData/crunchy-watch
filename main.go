@@ -170,17 +170,16 @@ func main() {
 		log.Info("Waiting for signal...")
 		s := <-ch
 		log.Infof("Received signal: %s", s)
-		if  s == syscall.SIGUSR1  {
-			pause=true
+		if s == syscall.SIGUSR1 {
+			pause = true
 			failover(pgconstr)
-			pause=false
+			pause = false
 		} else {
 			os.Exit(0)
 		}
 	}()
 
-
-	if (len(os.Args) < 1 ){
+	if len(os.Args) < 1 {
 		errorExit()
 	}
 
@@ -278,17 +277,17 @@ func main() {
 					failures = 0
 				}
 			}
-		}else {
+		} else {
 			log.Info("Health Checking paused")
 		}
 		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
 
 	}
 }
+
 var inFailOver int32 = 0
 
 func failover(target string) {
-
 
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
 		return
@@ -340,4 +339,3 @@ func errorExit() {
 
 	os.Exit(1)
 }
-

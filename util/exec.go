@@ -17,15 +17,15 @@ package util
 
 import (
 	"bytes"
-//	log "github.com/sirupsen/logrus"
+	//	log "github.com/sirupsen/logrus"
 	"io"
-	"strings"
-	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"net/url"
+	"strings"
 )
 
 // ExecOptions passed to ExecWithOptions
@@ -42,7 +42,8 @@ type ExecOptions struct {
 	// If false, whitespace in std{err,out} will be removed.
 	PreserveWhitespace bool
 }
-func ExecWithOptions(config *restclient.Config,  client kubernetes.Clientset, options ExecOptions) (string, string, error) {
+
+func ExecWithOptions(config *restclient.Config, client kubernetes.Clientset, options ExecOptions) (string, string, error) {
 
 	const tty = false
 
