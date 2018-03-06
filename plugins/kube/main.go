@@ -46,9 +46,6 @@ var failoverStrategies = []string{
 	"latest",
 }
 
-const (
-	kubectlCmd string = "/opt/cpm/bin/kubectl"
-)
 
 func getReplica() (string, error) {
 	switch config.GetString(KubeFailoverStrategy.EnvVar) {
@@ -63,7 +60,7 @@ func getReplica() (string, error) {
 	}
 }
 
-func (h failoverHandler) Failover(dataDirectory string ) error {
+func (h failoverHandler) Failover( ) error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(KubeFailoverStrategy.EnvVar))
 
