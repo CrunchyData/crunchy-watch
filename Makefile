@@ -18,7 +18,7 @@ clean:
 
 resolve:
 	@echo "Resolving dependencies..."
-	@glide install
+	@dep ensure
 
 build:
 	@echo "Building crunchy-watch..."
