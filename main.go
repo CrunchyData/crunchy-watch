@@ -126,7 +126,7 @@ const (
 )
 
 type FailoverHandler interface {
-	Failover(dataDirectory string ) error
+	Failover() error
 	SetFlags(*flag.FlagSet)
 	Initialize() error
 }
