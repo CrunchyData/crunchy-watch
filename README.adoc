@@ -162,7 +162,7 @@ accomplished using `make` and the provide Makefile.
  * Docker 1.12 or greater
  * Kubernetes client (kubectl) 1.7 or greater
  * https://www.openshift.org/download.html[Openshift client (oc) 3.6] or greater
- * https://github.com/golang/dep
+ * https://github.com/Masterminds/glide[Glide 0.12] or greater
 
 *Note:* The `$> make setup` target (below) will retrieve the requisite kubernetes and
 openshift client binaries.
@@ -208,8 +208,8 @@ cd crunchy-watch
 ==== Get Project Dependencies
 
 ....
-go get -u github.com/golang/dep/cmd/dep
-dep ensure
+go get github.com/Masterminds/glide
+glide update
 make setup
 ....
 
