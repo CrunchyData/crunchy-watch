@@ -103,7 +103,25 @@ func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 }
 
 func (h failoverHandler) Initialize() error {
+	cfg, err := buildConfig()
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	restConfig = cfg
+	c, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	client = c
 	return nil
+
+}
+
+func buildConfig() (*rest.Config, error) {
+	log.Debug("building config in cluster\n")
+	return rest.InClusterConfig()
 }
 
 var FailoverHandler failoverHandler
