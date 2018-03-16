@@ -11,7 +11,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package main
 
@@ -29,6 +29,9 @@ func (h failoverHandler) Failover() error {
 
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	// No docker specific flags
+}
+func (h failoverHandler) Initialize() error {
+	return nil
 }
 
 var FailoverHandler failoverHandler

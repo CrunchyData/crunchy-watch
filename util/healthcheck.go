@@ -11,7 +11,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package util
 
@@ -53,4 +53,31 @@ func HealthCheck(target string) error {
 	defer rows.Close()
 
 	return nil
+}
+func DataDirectory(target string) (string, error) {
+	con, err := sql.Open("postgres", target)
+
+	var dataDirectory string = ""
+	if err != nil {
+		log.Error(err.Error())
+		return dataDirectory, err
+	}
+	defer con.Close()
+
+	rs, err := con.Query("show data_directory")
+
+	defer rs.Close()
+
+	if err != nil {
+		log.Error(err.Error())
+		return dataDirectory, err
+	}
+	for rs.Next() {
+		err = rs.Scan(&dataDirectory)
+		if err != nil {
+			log.Error(err)
+			return dataDirectory, err
+		}
+	}
+	return dataDirectory, err
 }

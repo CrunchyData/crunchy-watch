@@ -11,7 +11,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package main
 
@@ -28,6 +28,7 @@ import (
 
 	"github.com/crunchydata/crunchy-watch/flags"
 	"github.com/crunchydata/crunchy-watch/util"
+	"sync/atomic"
 )
 
 // Valid supported platforms.
@@ -38,6 +39,7 @@ var platforms = []string{
 }
 
 var flagSet *flag.FlagSet
+var handler FailoverHandler
 
 // Define common flag information
 var (
@@ -148,6 +150,7 @@ const (
 type FailoverHandler interface {
 	Failover() error
 	SetFlags(*flag.FlagSet)
+	Initialize() error
 }
 
 func init() {
@@ -177,51 +180,66 @@ func init() {
 
 func main() {
 
+	var pause bool
+	var pgconstr string
+
 	fmt.Println("env var debug value is [" + config.GetString(Debug.EnvVar) + "]")
 	if config.GetString(Debug.EnvVar) == "true" {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("debug flag set to true")
-	} 
+	}
 
 	go func() {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch,
 			syscall.SIGINT,
 			syscall.SIGTERM,
+			syscall.SIGUSR1,
 		)
 
 		log.Info("Waiting for signal...")
 		s := <-ch
 		log.Infof("Received signal: %s", s)
-
-		os.Exit(0)
+		if s == syscall.SIGUSR1 {
+			pause = true
+			failover(pgconstr)
+			pause = false
+		} else {
+			os.Exit(0)
+		}
 	}()
+
+	if len(os.Args) < 1 {
+		errorExit()
+	}
+
+	log.SetLevel(log.DebugLevel)
 
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
 
 	// Check that platform is valid.
 	if !validPlatform {
-		log.Error("Usage: crunchy-watch <platform> [flags]")
 		log.Errorf("Error: '%s' is not a valid platform\n\n", platform)
-		log.Error("Valid platform options are:")
-
-		for _, p := range platforms {
-			log.Errorf(" - %s", p)
-		}
-
-		os.Exit(1)
+		errorExit()
 	}
 
 	// Load platform module
 	log.Infof("Loading Platform Module: %s", platform)
-	handler := loadPlatformModule(platform)
-
+	handler = loadPlatformModule(platform)
 	// Allow platform module to add it's command-line flags
 	handler.SetFlags(flagSet)
 
+	// initialize the handler
+	err := handler.Initialize()
+
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
+
 	// Parse all command-line flags
-	err := flagSet.Parse(os.Args[2:])
+	err = flagSet.Parse(os.Args[2:])
 
 	if err != nil {
 		log.Error(err.Error())
@@ -254,63 +272,100 @@ func main() {
 		config.GetString(Database.EnvVar),
 		int(timeout.Seconds()),
 	)
-
+	pgconstr = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
+		config.GetString("postgres"),
+		config.GetString(Password.EnvVar),
+		config.GetString(Primary.EnvVar),
+		config.GetInt(PrimaryPort.EnvVar),
+		config.GetString(Database.EnvVar),
+		int(timeout.Seconds()),
+	)
 	// Watch
 	failures := 0
 
 	for {
-		log.Infof("Health Checking: '%s'", config.GetString(Primary.EnvVar))
-		err := util.HealthCheck(target)
 
-		if err == nil {
-			log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
-		} else {
-			failures += 1
+		if pause == false {
+			log.Infof("Health Checking: '%s'", config.GetString(Primary.EnvVar))
+			err := util.HealthCheck(target)
 
-			log.Errorf("Could not reach '%s' (Attempt: %d)",
-				config.GetString(Primary.EnvVar),
-				failures,
-			)
+			if err == nil {
+				log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
+			} else {
+				failures += 1
 
-			// If max failure has been exceeded then process failover
-			if failures > config.GetInt(MaxFailures.EnvVar) {
+				log.Errorf("Could not reach '%s' (Attempt: %d)",
+					config.GetString(Primary.EnvVar),
+					failures,
+				)
 
-				// process failover pre-hook
-				preHook := config.GetString(PreHook.EnvVar)
-				if preHook != "" {
-					log.Infof("Executing pre-hook: %s", preHook)
-					err := execute(preHook)
-					if err != nil {
-						log.Error("Could not execute pre-hook")
-						log.Error(err.Error())
-					}
+				// If max failure has been exceeded then process failover
+				if failures > config.GetInt(MaxFailures.EnvVar) {
+
+					failover(pgconstr)
+					// reset retry count.
+					failures = 0
 				}
-
-				// Process failover
-				err = handler.Failover()
-
-				if err != nil {
-					log.Errorf("Failover process failed: %s", err.Error())
-				}
-
-				// Process failover post-hook
-				postHook := config.GetString(PostHook.EnvVar)
-				if postHook != "" {
-					log.Infof("Executing post-hook: %s", postHook)
-					err := execute(postHook)
-
-					if err != nil {
-						log.Error("Could not execute post-hook")
-						log.Error(err.Error())
-
-					}
-				}
-
-				// reset retry count.
-				failures = 0
 			}
+		} else {
+			log.Info("Health Checking paused")
 		}
-
 		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
+
 	}
+}
+
+var inFailOver int32 = 0
+
+func failover(target string) {
+
+	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
+		return
+	}
+
+	// process failover pre-hook
+	preHook := config.GetString(PreHook.EnvVar)
+	if preHook != "" {
+		log.Infof("Executing pre-hook: %s", preHook)
+		err := execute(preHook)
+		if err != nil {
+			log.Error("Could not execute pre-hook")
+			log.Error(err.Error())
+		}
+	}
+
+	if handler != nil {
+
+		// Process failover
+		err := handler.Failover()
+
+		if err != nil {
+			log.Errorf("Failover process failed: %s", err.Error())
+		}
+	} else {
+		log.Error("Failover process failed handler not initialized yet")
+	}
+
+	// Process failover post-hook
+	postHook := config.GetString(PostHook.EnvVar)
+	if postHook != "" {
+		log.Infof("Executing post-hook: %s", postHook)
+		err := execute(postHook)
+
+		if err != nil {
+			log.Error("Could not execute post-hook")
+			log.Error(err.Error())
+
+		}
+	}
+}
+func errorExit() {
+	log.Error("Usage: crunchy-watch <platform> [flags]")
+	log.Error("Valid platform options are:")
+
+	for _, p := range platforms {
+		log.Errorf(" - %s", p)
+	}
+
+	os.Exit(1)
 }

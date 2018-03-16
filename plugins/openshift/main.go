@@ -11,21 +11,19 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 
 package main
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"os/exec"
 
+	"github.com/crunchydata/crunchy-watch/flags"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	config "github.com/spf13/viper"
-
-	"github.com/crunchydata/crunchy-watch/flags"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type failoverHandler struct{}
@@ -52,9 +50,8 @@ var failoverStrategy = []string{
 	"latest",
 }
 
-const (
-	ocCmd string = "/opt/cpm/bin/oc"
-)
+var client *kubernetes.Clientset
+var restConfig *rest.Config
 
 func getReplica() (string, error) {
 	switch config.GetString(OSFailoverStrategy.EnvVar) {
@@ -69,94 +66,13 @@ func getReplica() (string, error) {
 	}
 }
 
-func relabelReplica(replica string) error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(ocCmd,
-		"label",
-		"pod",
-		"--overwrite=true",
-		fmt.Sprintf("--namespace=%s", config.GetString(OSProject.EnvVar)),
-		replica,
-		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
-
-func deletePrimaryPod() error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(ocCmd,
-		"delete",
-		"pod",
-		fmt.Sprintf("--namespace=%s", config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE")),
-		fmt.Sprintf("name=%s", config.GetString("CRUNCHY_WATCH_PRIMARY")),
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
-
-func promoteReplica(replica string) error {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	cmd := exec.Command(ocCmd,
-		"exec",
-		fmt.Sprintf("--namespace=%s", config.GetString(OSProject.EnvVar)),
-		replica,
-		"touch",
-		"/tmp/pg-failover-trigger",
-	)
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
-	if err != nil {
-		log.Error(stderr.String())
-	}
-
-	log.Info(stdout.String())
-	log.Info(stderr.String())
-
-	return err
-}
-
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
 		config.GetString(OSFailoverStrategy.EnvVar))
 
 	// shoot the old primary in the head
 	log.Info("Deleting existing primary...")
-	err := deletePrimaryPod()
+	err := deletePrimaryPod(config.GetString(OSProject.EnvVar), config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
 	if err != nil {
 		log.Error(err)
@@ -175,7 +91,7 @@ func (h failoverHandler) Failover() error {
 	log.Infof("Chose failover target (%s)\n", replica)
 
 	log.Info("Promoting failover replica...")
-	err = promoteReplica(replica)
+	err = promoteReplica(config.GetString(OSProject.EnvVar), replica)
 
 	if err != nil {
 		log.Errorf("Cannot promote replica: %s", replica)
@@ -183,7 +99,7 @@ func (h failoverHandler) Failover() error {
 	}
 
 	log.Info("Relabeling failover replica...")
-	err = relabelReplica(replica)
+	err = relabelReplica(config.GetString(OSProject.EnvVar), replica, config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
 	if err != nil {
 		log.Errorf("Cannot relabel replica: %s", replica)
@@ -196,6 +112,23 @@ func (h failoverHandler) Failover() error {
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	flags.String(f, OSProject, "default")
 	flags.String(f, OSFailoverStrategy, "default")
+}
+
+func (h failoverHandler) Initialize() error {
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	restConfig = cfg
+	c, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		log.Error("An error occurred initializing the client")
+		return err
+	}
+	client = c
+	return nil
+
 }
 
 var FailoverHandler failoverHandler
