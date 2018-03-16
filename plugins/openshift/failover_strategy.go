@@ -51,7 +51,6 @@ func labelStrategy() (string, error) {
 	pod := podList.Items[0]
 	return pod.Name, nil
 
-
 }
 
 func latestStrategy() (string, error) {

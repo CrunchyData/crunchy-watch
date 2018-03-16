@@ -1,15 +1,14 @@
 package main
 
 import (
-
 	"errors"
 
+	"github.com/crunchydata/crunchy-watch/flags"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	config "github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"github.com/crunchydata/crunchy-watch/flags"
 )
 
 type failoverHandler struct{}
@@ -51,8 +50,6 @@ func getReplica() (string, error) {
 		return "", errors.New("invalid openshift failover strategy")
 	}
 }
-
-
 
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",

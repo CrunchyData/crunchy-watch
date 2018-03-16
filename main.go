@@ -168,13 +168,11 @@ func main() {
 	var pause bool
 	var pgconstr string
 
-
 	fmt.Println("env var debug value is [" + config.GetString(Debug.EnvVar) + "]")
 	if config.GetString(Debug.EnvVar) == "true" {
 		log.SetLevel(log.DebugLevel)
 		log.Debug("debug flag set to true")
-	} 
-
+	}
 
 	go func() {
 		ch := make(chan os.Signal, 1)
