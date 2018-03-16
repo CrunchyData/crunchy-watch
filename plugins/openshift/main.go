@@ -115,7 +115,7 @@ func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 }
 
 func (h failoverHandler) Initialize() error {
-	cfg, err := buildConfig()
+	cfg, err := rest.InClusterConfig()
 	if err != nil {
 		log.Error("An error occurred initializing the client")
 		return err
@@ -131,9 +131,5 @@ func (h failoverHandler) Initialize() error {
 
 }
 
-func buildConfig() (*rest.Config, error) {
-	log.Debug("building config in cluster\n")
-	return rest.InClusterConfig()
-}
 
 var FailoverHandler failoverHandler

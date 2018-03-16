@@ -44,12 +44,6 @@ var (
 		EnvVar:      "CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY",
 		Description: "the kubernetes failover strategy",
 	}
-	kubeConfig = flags.FlagInfo{
-		Namespace:   "kubernetes",
-		Name:        "kube-config-file",
-		EnvVar:      "CRUNCHY_KUBE_CONFIG_FILE",
-		Description: "kubernetes client config file",
-	}
 )
 
 var client *kubernetes.Clientset
@@ -123,11 +117,10 @@ func (h failoverHandler) Failover() error {
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
 	flags.String(f, KubeNamespace, "default")
 	flags.String(f, KubeFailoverStrategy, "default")
-	flags.String(f, kubeConfig, "")
 }
 
 func (h failoverHandler) Initialize() error {
-	cfg, err := buildConfig(config.GetString(kubeConfig.EnvVar))
+	cfg, err := rest.InClusterConfig()
 	if err != nil {
 		log.Error("An error occurred initializing the client")
 		return err
@@ -140,15 +133,6 @@ func (h failoverHandler) Initialize() error {
 	}
 	client = c
 	return nil
-}
 
-func buildConfig(kubeconfig string) (*rest.Config, error) {
-	if kubeconfig != "" {
-		log.Debugf("building config from flags %s\n", kubeConfig)
-		return clientcmd.BuildConfigFromFlags("", kubeconfig)
-	}
-	log.Debug("building config in cluster\n")
-	return rest.InClusterConfig()
 }
-
 var FailoverHandler failoverHandler
