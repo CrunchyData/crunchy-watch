@@ -25,7 +25,6 @@ import (
 	"github.com/crunchydata/crunchy-watch/flags"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 type failoverHandler struct{}
