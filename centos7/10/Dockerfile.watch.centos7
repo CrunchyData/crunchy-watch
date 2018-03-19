@@ -43,8 +43,8 @@ RUN groupadd -r -g 26 postgres && \
 RUN mkdir -p /opt/cpm/bin/crunchy-watch/plugins
 
 # Install tools
-ADD tools/kubectl /opt/cpm/bin/kubectl
-ADD tools/openshift/oc /opt/cpm/bin/oc
+#ADD tools/kubectl /opt/cpm/bin/kubectl
+#ADD tools/openshift/oc /opt/cpm/bin/oc
 
 # Install crunchy-watch
 ADD build/crunchy-watch /opt/cpm/bin/crunchy-watch/crunchy-watch

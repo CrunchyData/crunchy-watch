@@ -61,8 +61,8 @@ RUN mkdir -p /opt/cpm/bin/crunchy-watch/plugins
 
 
 # Install tools
-ADD tools/kubectl /opt/cpm/bin/kubectl
-ADD tools/openshift/oc /opt/cpm/bin/oc
+#ADD tools/kubectl /opt/cpm/bin/kubectl
+#ADD tools/openshift/oc /opt/cpm/bin/oc
 
 
 # Install crunchy-watch
