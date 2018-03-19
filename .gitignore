@@ -1,6 +1,7 @@
 vendor
 build
 tools
+glide.lock
 
 # Crunchy repo files
 CRUNCHY-GPG-KEY.public
