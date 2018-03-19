@@ -250,8 +250,10 @@ make docker-image
 	| builds openshift plugin module
 | clean
 	| cleans all build related artifacts, including dependencies.
+| dependencies
+	| resolves build related dependencies
 | resolve
-	| resolves all build related dependencies
+	| installs build related dependencies
 | docker-image
 	| build docker image - *Note:* requires `CCP_BASEOS`, `CCP_PGVERSION`,
 	|`CCP_PG_FULLVERSION` and `CCP_VERSION` to be defined.

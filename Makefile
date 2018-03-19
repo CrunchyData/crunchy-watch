@@ -7,7 +7,7 @@ TOOLS_DIR := $(PROJECT_DIR)/tools
 VENDOR_DIR := $(PROJECT_DIR)/vendor
 DOCS_DIR := $(PROJECT_DIR)/docs
 
-all: clean resolve build modules
+all: clean dependencies resolve build modules
 
 clean:
 	@echo "Cleaning project..."
@@ -16,9 +16,13 @@ clean:
 	@rm -rf $(VENDOR_DIR)
 	@go clean -i
 
+dependencies:
+	@echo "Installing dependencies"
+	@glide install
+
 resolve:
 	@echo "Resolving dependencies..."
-	@glide install
+	@glide up
 
 build:
 	@echo "Building crunchy-watch..."
