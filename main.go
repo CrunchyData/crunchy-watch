@@ -149,7 +149,7 @@ const (
 
 type FailoverHandler interface {
 	Failover() error
-	SetFlags(*flag.FlagSet)
+	SetFlags(*flag.FlagSet) error
 	Initialize() error
 }
 
@@ -227,11 +227,18 @@ func main() {
 	// Load platform module
 	log.Infof("Loading Platform Module: %s", platform)
 	handler = loadPlatformModule(platform)
+
 	// Allow platform module to add it's command-line flags
-	handler.SetFlags(flagSet)
+	err := handler.SetFlags(flagSet)
+
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
+
 
 	// initialize the handler
-	err := handler.Initialize()
+	err = handler.Initialize()
 
 	if err != nil {
 		log.Error(err.Error())

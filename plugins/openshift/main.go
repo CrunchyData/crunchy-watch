@@ -109,9 +109,13 @@ func (h failoverHandler) Failover() error {
 	return nil
 }
 
-func (h failoverHandler) SetFlags(f *flag.FlagSet) {
+func (h failoverHandler) SetFlags(f *flag.FlagSet) error {
 	flags.String(f, OSProject, "default")
+	if config.GetString(OSProject.EnvVar) == "default" {
+		return errors.New("Namespace must be set to something other than 'default'")
+	}
 	flags.String(f, OSFailoverStrategy, "default")
+	return nil
 }
 
 func (h failoverHandler) Initialize() error {
