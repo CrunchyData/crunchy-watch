@@ -27,7 +27,7 @@ oc create configmap watch-hooks-configmap \
 oc create -f $DIR/watch-sa.json
 oc policy add-role-to-group edit system:serviceaccounts -n $NAMESPACE
 oc process -f $DIR/watch.json \
-	-p NAMESPACE=$NAMESPACE \
+	-p NAMESPACE=$CCP_NAMESPACE \
 	-p CCP_IMAGE_PREFIX=$CCP_IMAGE_PREFIX \
 	-p CCP_IMAGE_TAG=$CCP_IMAGE_TAG | oc create -f -
 
