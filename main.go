@@ -149,7 +149,8 @@ const (
 
 type FailoverHandler interface {
 	Failover() error
-	SetFlags(*flag.FlagSet) error
+	SetFlags(*flag.FlagSet)
+	CheckFlags() error
 	Initialize() error
 }
 
@@ -229,16 +230,12 @@ func main() {
 	handler = loadPlatformModule(platform)
 
 	// Allow platform module to add it's command-line flags
-	err := handler.SetFlags(flagSet)
+	handler.SetFlags(flagSet)
 
-	if err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
-	}
 
 
 	// initialize the handler
-	err = handler.Initialize()
+	err := handler.Initialize()
 
 	if err != nil {
 		log.Error(err.Error())
@@ -247,6 +244,14 @@ func main() {
 
 	// Parse all command-line flags
 	err = flagSet.Parse(os.Args[2:])
+
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
+
+	// check plugin specific flags
+	err = handler.CheckFlags();
 
 	if err != nil {
 		log.Error(err.Error())
@@ -324,11 +329,19 @@ func main() {
 
 var inFailOver int32 = 0
 
+/*
+reset in failover
+ */
+func resetInFailOver() {
+	atomic.StoreInt32(&inFailOver,0)
+}
 func failover(target string) {
 
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
 		return
 	}
+
+	defer resetInFailOver()
 
 	// process failover pre-hook
 	preHook := config.GetString(PreHook.EnvVar)

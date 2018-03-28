@@ -113,13 +113,10 @@ func (h failoverHandler) Failover() error {
 	return nil
 }
 
-func (h failoverHandler) SetFlags(f *flag.FlagSet) error {
+func (h failoverHandler) SetFlags(f *flag.FlagSet)  {
 	flags.String(f, KubeNamespace, "default")
-	if config.GetString(KubeNamespace.EnvVar) == "default" {
-		return errors.New("Namespace must be set to something other than 'default'")
-	}
 	flags.String(f, KubeFailoverStrategy, "default")
-	return nil
+
 }
 
 func (h failoverHandler) Initialize() error {
@@ -137,6 +134,13 @@ func (h failoverHandler) Initialize() error {
 	client = c
 	return nil
 
+}
+
+func (h failoverHandler) CheckFlags() error {
+	if config.GetString(KubeNamespace.EnvVar) == "default" {
+		return errors.New("Namespace must be set to something other than 'default'")
+	}
+	return nil
 }
 
 var FailoverHandler failoverHandler
