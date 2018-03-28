@@ -1,0 +1,9 @@
+disable.sh can be used to disable a pod.
+kubectl cp disable.sh pr-primary:/tmp
+kubectl exec -it pr-primary /tmp/disable.sh
+
+It works by changing the name of PG_VERSION to PG_VERSION.BAK
+postgreSQL will not start in that state.
+
+Then sending a TERM signal to postgres. This will cause the pod to 
+terminate and subsequent starts will fail.
