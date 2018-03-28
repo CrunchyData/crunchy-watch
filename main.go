@@ -317,11 +317,19 @@ func main() {
 
 var inFailOver int32 = 0
 
+/*
+make sure we reset the inFailOverFlag
+*/
+func resetInFailOver() {
+	atomic.StoreInt32(&inFailOver, 0)
+}
+
 func failover(target string) {
 
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
 		return
 	}
+	defer resetInFailOver()
 
 	// process failover pre-hook
 	preHook := config.GetString(PreHook.EnvVar)
