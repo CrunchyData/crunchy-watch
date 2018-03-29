@@ -131,4 +131,11 @@ func (h failoverHandler) Initialize() error {
 
 }
 
+func (h failoverHandler) CheckFlags() error {
+	if config.GetString(OSProject.EnvVar) == "default" {
+		return errors.New("Namespace must be set to something other than 'default'")
+	}
+	return nil
+}
+
 var FailoverHandler failoverHandler
