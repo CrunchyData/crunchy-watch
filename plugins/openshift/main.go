@@ -34,6 +34,7 @@ var (
 		Name:        "openshift-project",
 		EnvVar:      "CRUNCHY_WATCH_OPENSHIFT_PROJECT",
 		Description: "the openshift project",
+		Required:    true,
 	}
 
 	OSFailoverStrategy = flags.FlagInfo{
@@ -41,6 +42,7 @@ var (
 		Name:        "openshift-failover-strategy",
 		EnvVar:      "CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY",
 		Description: "the openshift failover strategy",
+		Required:    false,
 	}
 )
 
@@ -129,13 +131,6 @@ func (h failoverHandler) Initialize() error {
 	client = c
 	return nil
 
-}
-
-func (h failoverHandler) CheckFlags() error {
-	if config.GetString(OSProject.EnvVar) == "default" {
-		return errors.New("Namespace must be set to something other than 'default'")
-	}
-	return nil
 }
 
 var FailoverHandler failoverHandler
