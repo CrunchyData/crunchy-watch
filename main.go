@@ -351,7 +351,6 @@ func main() {
 
 var inFailOver int32 = 0
 
-
 func failover(target string) {
 
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
