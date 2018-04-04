@@ -6,3 +6,5 @@ import:
   version: v1.0.0
 - package: github.com/sirupsen/logrus
   version: v1.0.3
+- package: k8s.io/client-go
+  version: v6.0.0
