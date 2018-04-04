@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kubectl delete pod watch
-../waitforterm.sh watch kubectl
+kubectl delete deploy watch
 
 kubectl delete sa pg-watcher
 

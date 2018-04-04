@@ -1,0 +1,116 @@
+{
+	"apiVersion": "apps/v1",
+	"kind": "Deployment",
+	"metadata": {
+		"name": "watch",
+		"labels": {
+			"app": "watch"
+		}
+	},
+	"spec": {
+		"selector": {
+			"matchLabels": {
+				"app": "watch"
+			}
+		},
+		"replicas": 1,
+		"template": {
+			"metadata": {
+				"labels": {
+					"app": "watch"
+				}
+			},
+			"spec": {
+				"containers": [
+					{
+						"name": "watch",
+						"image": "crunchydata/crunchy-watch:$CCP_IMAGE_TAG",
+						"imagePullPolicy": "IfNotPresent",
+						"env": [
+							{
+								"name": "CRUNCHY_DEBUG",
+								"value": "true"
+							},
+							{
+								"name": "CRUNCHY_WATCH_PLATFORM",
+								"value": "kube"
+							},
+							{
+								"name": "CRUNCHY_WATCH_PRIMARY",
+								"value": "pr-primary"
+							},
+							{
+								"name": "CRUNCHY_WATCH_REPLICA",
+								"value": "pr-replica"
+							},
+							{
+								"name": "CRUNCHY_WATCH_USERNAME",
+								"value": "primaryuser"
+							},
+							{
+								"name": "CRUNCHY_WATCH_PASSWORD",
+								"value": "password"
+							},
+							{
+								"name": "CRUNCHY_WATCH_DATABASE",
+								"value": "postgres"
+							},
+							{
+								"name": "CRUNCHY_WATCH_HEALTHCHECK_INTERVAL",
+								"value": "30s"
+							},
+							{
+								"name": "CRUNCHY_WATCH_FAILOVER_WAIT",
+								"value": "10s"
+							},
+							{
+								"name": "CRUNCHY_WATCH_KUBE_NAMESPACE",
+								"value": "$CCP_NAMESPACE"
+							},
+							{
+								"name": "CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY",
+								"value": "latest"
+							},
+							{
+								"name": "CRUNCHY_WATCH_PRE_HOOK",
+								"value": "/hooks/watch-pre-hook"
+							},
+							{
+								"name": "CRUNCHY_WATCH_POST_HOOK",
+								"value": "/hooks/watch-post-hook"
+							}
+						],
+						"volumeMounts": [
+							{
+								"mountPath": "/hooks",
+								"name": "watch-hooks-volume"
+							}
+						],
+						"resources": {}
+					}
+				],
+				"volumes": [
+					{
+						"name": "watch-hooks-volume"
+					},
+					{
+						"name": "watch-hooks-configmap",
+						"configMap": {
+							"name": "watch-hooks-configmap"
+						}
+					}
+				],
+				"restartPolicy": "Always",
+				"terminationGracePeriodSeconds": 30,
+				"dnsPolicy": "ClusterFirst",
+				"schedulerName": "default-scheduler",
+				"securityContext": {},
+				"serviceAccount": "pg-watcher",
+				"serviceAccountName": "pg-watcher"
+			}
+		},
+		"strategy": {
+			"type": "Recreate"
+		}
+	}
+}
