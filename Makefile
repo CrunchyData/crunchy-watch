@@ -26,7 +26,14 @@ build:
 		-ldflags='-s -w' \
 		$(PROJECT_DIR)/*.go
 
-modules: kube-module openshift-module
+modules: kube-module openshift-module docker-module
+
+docker-module:
+	@echo "Building Docker module..."
+	@go build -buildmode=plugin \
+		-o $(BUILD_DIR)/plugins/docker.so \
+		-ldflags='-s -w' \
+		plugins/docker/*.go
 
 kube-module:
 	@echo "Building Kubernetes module..."
