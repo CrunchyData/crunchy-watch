@@ -199,7 +199,7 @@ mkdir -p $GOPATH/src/github.com/crunchydata/
 export PATH=$PATH:$GOPATH/bin
 export CCP_BASEOS=centos7
 export CCP_PGVERSION=10
-export CCP_PG_FULLVERSION=10.3
+export CCP_PG_FULLVERSION=10.4
 cd $GOPATH/src/github.com/crunchydata
 git clone https://github.com/CrunchyData/crunchy-watch.git
 cd crunchy-watch
@@ -322,13 +322,13 @@ variable which indicates which version of the container you will pull down and
 execute, for example:
 
 ....
-$> export CCP_IMAGE_TAG=centos7-10.3-1.8.3
+$> export CCP_IMAGE_TAG=centos7-10.4-1.8.3
 $> ./run.sh
 ....
 
 Or,
 
 ....
-$> CCP_IMAGE_TAG=centos7-10.3-1.8.3 ./run.sh
+$> CCP_IMAGE_TAG=centos7-10.4-1.8.3 ./run.sh
 ....
 
