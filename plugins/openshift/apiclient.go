@@ -3,21 +3,23 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/crunchydata/crunchy-watch/util"
+
 	log "github.com/sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/crunchydata/crunchy-watch/util"
 )
 
 func deletePrimaryPod(namespace string, name string) error {
-
 	podsClient := client.CoreV1().Pods(namespace)
-	err := podsClient.Delete(name, nil)
 
-	if err != nil {
-
-		log.Error(err.Error())
-	}
+	err := podsClient.DeleteCollection(
+		&metav1.DeleteOptions{},
+		metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("name=%s", name),
+		},
+	)
 
 	return err
 }
