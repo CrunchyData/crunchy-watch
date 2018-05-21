@@ -18,12 +18,14 @@ package main
 import (
 	"errors"
 
-	"github.com/crunchydata/crunchy-watch/flags"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	config "github.com/spf13/viper"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"github.com/crunchydata/crunchy-watch/flags"
 )
 
 type failoverHandler struct{}
@@ -72,11 +74,16 @@ func (h failoverHandler) Failover() error {
 
 	// shoot the old primary in the head
 	log.Info("Deleting existing primary...")
-	err := deletePrimaryPod(config.GetString(OSProject.EnvVar), config.GetString("CRUNCHY_WATCH_PRIMARY"))
+	err := deletePrimaryPod(config.GetString(OSProject.EnvVar),
+		config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
 	if err != nil {
-		log.Error(err)
-		log.Error("An error occurred while deleting the old primary")
+		if kerrors.IsNotFound(err) {
+			log.Warn(err.Error())
+		} else {
+			log.Error(err)
+			log.Error("An error occurred while deleting the old primary")
+		}
 	}
 	log.Info("Deleted old primary ")
 
