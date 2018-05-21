@@ -95,7 +95,7 @@ func (h failoverHandler) Failover() error {
 		return err
 	}
 
-	log.Infof("Chose failover target (%s)\n", replica)
+	log.Infof("Chose failover target (%s)", replica)
 
 	log.Info("Promoting failover replica...")
 	err = promoteReplica(config.GetString(OSProject.EnvVar), replica)
