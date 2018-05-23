@@ -36,6 +36,7 @@ var (
 		Name:        "kube-namespace",
 		EnvVar:      "CRUNCHY_WATCH_KUBE_NAMESPACE",
 		Description: "the kubernetes namespace",
+		Required:    true,
 	}
 
 	KubeFailoverStrategy = flags.FlagInfo{
@@ -43,6 +44,7 @@ var (
 		Name:        "kube-failover-strategy",
 		EnvVar:      "CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY",
 		Description: "the kubernetes failover strategy",
+		Required:    true,
 	}
 )
 
@@ -120,8 +122,9 @@ func (h failoverHandler) Failover() error {
 }
 
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
-	flags.String(f, KubeNamespace, "default")
+	flags.String(f, KubeNamespace, "")
 	flags.String(f, KubeFailoverStrategy, "default")
+
 }
 
 func (h failoverHandler) Initialize() error {

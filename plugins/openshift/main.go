@@ -36,6 +36,7 @@ var (
 		Name:        "openshift-project",
 		EnvVar:      "CRUNCHY_WATCH_OPENSHIFT_PROJECT",
 		Description: "the openshift project",
+		Required:    true,
 	}
 
 	OSFailoverStrategy = flags.FlagInfo{
@@ -43,6 +44,7 @@ var (
 		Name:        "openshift-failover-strategy",
 		EnvVar:      "CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY",
 		Description: "the openshift failover strategy",
+		Required:    false,
 	}
 )
 

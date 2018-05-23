@@ -48,6 +48,7 @@ var (
 		Name:        "primary",
 		EnvVar:      "CRUNCHY_WATCH_PRIMARY",
 		Description: "host of the primary PostgreSQL instance",
+		Required:    false,
 	}
 
 	PrimaryPort = flags.FlagInfo{
@@ -55,6 +56,7 @@ var (
 		Name:        "primary-port",
 		EnvVar:      "CRUNCHY_WATCH_PRIMARY_PORT",
 		Description: "port of the primary PostgreSQL instance",
+		Required:    false,
 	}
 
 	Replica = flags.FlagInfo{
@@ -62,6 +64,7 @@ var (
 		Name:        "replica",
 		EnvVar:      "CRUNCHY_WATCH_REPLICA",
 		Description: "host of the replica PostgreSQL instance",
+		Required:    false,
 	}
 
 	ReplicaPort = flags.FlagInfo{
@@ -69,6 +72,7 @@ var (
 		Name:        "replica-port",
 		EnvVar:      "CRUNCHY_WATCH_REPLICA_PORT",
 		Description: "port of the replica PostgreSQL instance",
+		Required:    false,
 	}
 
 	Username = flags.FlagInfo{
@@ -76,6 +80,7 @@ var (
 		Name:        "username",
 		EnvVar:      "CRUNCHY_WATCH_USERNAME",
 		Description: "login user to connect to PostgreSQL",
+		Required:    false,
 	}
 
 	Password = flags.FlagInfo{
@@ -83,6 +88,7 @@ var (
 		Name:        "password",
 		EnvVar:      "CRUNCHY_WATCH_PASSWORD",
 		Description: "login user's password to connect to PostgreSQL",
+		Required:    false,
 	}
 
 	Database = flags.FlagInfo{
@@ -90,6 +96,7 @@ var (
 		Name:        "database",
 		EnvVar:      "CRUNCHY_WATCH_DATABASE",
 		Description: "database connect to",
+		Required:    false,
 	}
 
 	Timeout = flags.FlagInfo{
@@ -97,6 +104,7 @@ var (
 		Name:        "timeout",
 		EnvVar:      "CRUNCHY_WATCH_TIMEOUT",
 		Description: "connection timeout",
+		Required:    false,
 	}
 
 	MaxFailures = flags.FlagInfo{
@@ -104,6 +112,7 @@ var (
 		Name:        "max-failures",
 		EnvVar:      "CRUNCHY_WATCH_MAX_FAILURES",
 		Description: "maximum number of failures before performing failover",
+		Required:    false,
 	}
 
 	HealthcheckInterval = flags.FlagInfo{
@@ -111,6 +120,7 @@ var (
 		Name:        "healthcheck-interval",
 		EnvVar:      "CRUNCHY_WATCH_HEALTHCHECK_INTERVAL",
 		Description: "interval between healthchecks",
+		Required:    false,
 	}
 
 	FailoverWait = flags.FlagInfo{
@@ -118,6 +128,7 @@ var (
 		Name:        "failover-wait",
 		EnvVar:      "CRUNCHY_WATCH_FAILOVER_WAIT",
 		Description: "time to wait for failover to process",
+		Required:    false,
 	}
 
 	PreHook = flags.FlagInfo{
@@ -125,6 +136,7 @@ var (
 		Name:        "pre-hook",
 		EnvVar:      "CRUNCHY_WATCH_PRE_HOOK",
 		Description: "failover pre-hook to execute before processing failover",
+		Required:    false,
 	}
 
 	Debug = flags.FlagInfo{
@@ -132,6 +144,7 @@ var (
 		Name:        "debug",
 		EnvVar:      "CRUNCHY_DEBUG",
 		Description: "when set to true, debug output is enabled",
+		Required:    false,
 	}
 
 	PostHook = flags.FlagInfo{
@@ -139,6 +152,7 @@ var (
 		Name:        "post-hook",
 		EnvVar:      "CRUNCHY_WATCH_POST_HOOK",
 		Description: "failover post-hook to execute after processing failover",
+		Required:    false,
 	}
 )
 
@@ -227,6 +241,7 @@ func main() {
 	// Load platform module
 	log.Infof("Loading Platform Module: %s", platform)
 	handler = loadPlatformModule(platform)
+
 	// Allow platform module to add it's command-line flags
 	handler.SetFlags(flagSet)
 
@@ -245,6 +260,25 @@ func main() {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
+
+	/*
+		Each individual flag will set required to be true or false in FlagInfo
+		When the flag is created if required is true an annotation named required will
+		be added to the flags. If the default is "" then it must be changed by either
+		the Environment variable or a command line option
+	*/
+	flagSet.VisitAll(func(flag *flag.Flag) {
+		exitNow := false
+		required := flag.Annotations["required"]
+		if required != nil && required[0] == "true" && flag.DefValue == "" && flag.Changed == false {
+			exitNow = true
+			log.Errorf("%s must be set in the environment or on the command line \n", flag.Name)
+		}
+
+		if exitNow {
+			os.Exit(1)
+		}
+	})
 
 	// Check that required flags/envs were set
 	if config.GetString(Primary.EnvVar) == "" {
