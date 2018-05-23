@@ -26,9 +26,10 @@ import (
 	flag "github.com/spf13/pflag"
 	config "github.com/spf13/viper"
 
+	"sync/atomic"
+
 	"github.com/crunchydata/crunchy-watch/flags"
 	"github.com/crunchydata/crunchy-watch/util"
-	"sync/atomic"
 )
 
 // Valid supported platforms.
@@ -140,6 +141,13 @@ var (
 		EnvVar:      "CRUNCHY_DEBUG",
 		Description: "when set to true, debug output is enabled",
 	}
+
+	LogLevel = flags.FlagInfo{
+		Namespace:   "general",
+		Name:        "log-level",
+		EnvVar:      "CRUNCHY_LOG_LEVEL",
+		Description: "debug, info, warning, error, fatal, and panic are valid values",
+	}
 )
 
 const (
@@ -176,10 +184,15 @@ func init() {
 	flags.String(flagSet, PreHook, "")
 	flags.String(flagSet, PostHook, "")
 	flags.Bool(flagSet, Debug, false)
+	flags.String(flagSet, LogLevel, "")
 }
 
 func main() {
 	var pause bool
+
+	if logLevel, err := log.ParseLevel(LogLevel.EnvVar); err != nil {
+		log.SetLevel(log.LogLevel)
+	}
 
 	if config.GetBool(Debug.EnvVar) {
 		log.SetLevel(log.DebugLevel)
