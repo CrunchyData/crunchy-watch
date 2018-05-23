@@ -22,14 +22,14 @@ docker run \
 	--privileged=true \
 	--link primary:primary \
 	--link replica:replica \
-	-e PLATFORM="docker" \
-	-e PG_PRIMARY="primary:5432" \
-	-e PG_REPLICA="replica:5432" \
-	-e PG_USERNAME="primaryuser" \
-	-e PG_PASSWORD="password" \
-	-e PG_DATABASE="postgres" \
-	-e PG_HEALTHCHECK_INTERVAL="30s" \
-	-e PG_FAILOVER_WAIT="10s" \
+	-e CRUNCHY_WATCH_PLATFORM="docker" \
+	-e CRUNCHY_WATCH_PRIMARY="primary:5432" \
+	-e CRUNCHY_WATCH_REPLICA="replica:5432" \
+	-e CRUNCHY_WATCH_USERNAME="primaryuser" \
+	-e CRUNCHY_WATCH_PASSWORD="password" \
+	-e CRUNCHY_WATCH_DATABASE="postgres" \
+	-e CRUNCHY_WATCH_HEALTHCHECK_INTERVAL="30s" \
+	-e CRUNCHY_WATCH_FAILOVER_WAIT="10s" \
 	--name=$CONTAINER_NAME \
 	--hostname=$CONTAINER_NAME \
 	-d crunchydata/crunchy-watch:$CCP_IMAGE_TAG
