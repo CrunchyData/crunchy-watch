@@ -179,9 +179,7 @@ func init() {
 }
 
 func main() {
-
 	var pause bool
-	var pgconstr string
 
 	fmt.Println("env var debug value is [" + config.GetString(Debug.EnvVar) + "]")
 	if config.GetString(Debug.EnvVar) == "true" {
@@ -202,7 +200,7 @@ func main() {
 		log.Infof("Received signal: %s", s)
 		if s == syscall.SIGUSR1 {
 			pause = true
-			failover(pgconstr)
+			failover()
 			pause = false
 		} else {
 			os.Exit(0)
@@ -272,14 +270,7 @@ func main() {
 		config.GetString(Database.EnvVar),
 		int(timeout.Seconds()),
 	)
-	pgconstr = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable&connect_timeout=%d",
-		config.GetString("postgres"),
-		config.GetString(Password.EnvVar),
-		config.GetString(Primary.EnvVar),
-		config.GetInt(PrimaryPort.EnvVar),
-		config.GetString(Database.EnvVar),
-		int(timeout.Seconds()),
-	)
+
 	// Watch
 	failures := 0
 
@@ -301,8 +292,7 @@ func main() {
 
 				// If max failure has been exceeded then process failover
 				if failures > config.GetInt(MaxFailures.EnvVar) {
-
-					failover(pgconstr)
+					failover()
 					// reset retry count.
 					failures = 0
 				}
@@ -317,7 +307,7 @@ func main() {
 
 var inFailOver int32 = 0
 
-func failover(target string) {
+func failover() {
 
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
 		return
