@@ -47,3 +47,9 @@ func Duration(f *flag.FlagSet, flagInfo FlagInfo, defaultValue time.Duration) {
 	viper.BindEnv(flagInfo.EnvVar)
 	viper.BindPFlag(flagInfo.EnvVar, f.Lookup(flagInfo.Name))
 }
+
+func Bool(f *flag.FlagSet, flagInfo FlagInfo, defaultValue bool) {
+	f.Bool(flagInfo.Name, defaultValue, flagInfo.Description)
+	viper.BindEnv(flagInfo.EnvVar)
+	viper.BindPFlag(flagInfo.EnvVar, f.Lookup(flagInfo.Name))
+}
