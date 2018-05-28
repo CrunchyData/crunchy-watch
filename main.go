@@ -190,12 +190,13 @@ func init() {
 func main() {
 	var pause bool
 
-	if logLevel, err := log.ParseLevel(LogLevel.EnvVar); err != nil {
-		log.SetLevel(log.LogLevel)
-	}
-
 	if config.GetBool(Debug.EnvVar) {
 		log.SetLevel(log.DebugLevel)
+		log.Debug("debug flag set to true")
+	} else if logLevel, err := log.ParseLevel(LogLevel.EnvVar); err != nil {
+		log.SetLevel(logLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
 	}
 
 	go func() {
@@ -221,8 +222,6 @@ func main() {
 	if len(os.Args) < 2 {
 		errorExit()
 	}
-
-	log.SetLevel(log.DebugLevel)
 
 	platform := os.Args[1]
 	validPlatform := checkPlatform(platform)
