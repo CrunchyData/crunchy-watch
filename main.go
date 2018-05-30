@@ -191,11 +191,15 @@ func main() {
 	var pause bool
 
 	if config.GetBool(Debug.EnvVar) {
+		fmt.Println("env var debug value is [" + config.GetString(Debug.EnvVar) + "]")
+
 		log.SetLevel(log.DebugLevel)
 		log.Debug("debug flag set to true")
-	} else if logLevel, err := log.ParseLevel(LogLevel.EnvVar); err != nil {
+	} else if logLevel, err := log.ParseLevel(config.GetString(LogLevel.EnvVar)); err == nil {
 		log.SetLevel(logLevel)
+		log.Infof("log level set to %s", logLevel)
 	} else {
+		log.Debug("Defaulting to WARN level")
 		log.SetLevel(log.WarnLevel)
 	}
 
