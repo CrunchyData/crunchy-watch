@@ -56,7 +56,7 @@ func loadPlatformModule(platform string) FailoverHandler {
 	return handler
 }
 
-func checkPlatform(platform string) bool {
+func validPlatform(platform string) bool {
 	for _, p := range platforms {
 		if p == platform {
 			return true

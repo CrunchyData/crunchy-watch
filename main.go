@@ -77,10 +77,8 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	platform := os.Args[1]
-	validPlatform := checkPlatform(platform)
-
 	// Check that platform is valid.
-	if !validPlatform {
+	if !validPlatform(platform) {
 		log.Errorf("Error: '%s' is not a valid platform\n\n", platform)
 		errorExit()
 	}
