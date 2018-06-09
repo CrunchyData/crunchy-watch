@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+	config "github.com/spf13/viper"
 
 	"github.com/crunchydata/crunchy-watch/flags"
 )
@@ -142,4 +143,13 @@ func init() {
 	flags.String(flagSet, PreHook, "")
 	flags.String(flagSet, PostHook, "")
 	flags.Bool(flagSet, Debug, false)
+}
+
+func findConfigOrFail(fi flags.FlagInfo, errorMessage string) {
+	if config.GetString(fi.EnvVar) == "" {
+		log.Error(errorMessage)
+		log.Errorf("This value can be provided by either the '--%s' flag or the '%s' environment variable",
+			fi.Name, fi.EnvVar)
+		os.Exit(1)
+	}
 }

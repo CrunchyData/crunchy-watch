@@ -90,35 +90,20 @@ func main() {
 	handler.SetFlags(flagSet)
 
 	// initialize the handler
-	err := handler.Initialize()
-
-	if err != nil {
+	if err := handler.Initialize(); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
 
 	// Parse all command-line flags
-	err = flagSet.Parse(os.Args[2:])
-
-	if err != nil {
+	if err := flagSet.Parse(os.Args[2:]); err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
 
 	// Check that required flags/envs were set
-	if config.GetString(Primary.EnvVar) == "" {
-		log.Error("Must specify a primary PostgreSQL instance.")
-		log.Errorf("This value can be provided by either the '--%s' flag or the '%s' environment variable",
-			Primary.Name, Primary.EnvVar)
-		os.Exit(1)
-	}
-
-	if config.GetString(Replica.EnvVar) == "" {
-		log.Error("Must specify a replica PostgreSQL instance for failover.")
-		log.Errorf("This value can be provided by either the '--%s' flag or the '%s' environment variable",
-			Replica.Name, Replica.EnvVar)
-		os.Exit(1)
-	}
+	findConfigOrFail(Primary, "Must specify a primary PostgreSQL instance.")
+	findConfigOrFail(Replica, "Must specify a replica PostgreSQL instance for failover.")
 
 	timeout := config.GetDuration(Timeout.EnvVar)
 
@@ -169,7 +154,6 @@ func main() {
 var inFailOver int32 = 0
 
 func failover() {
-
 	if atomic.CompareAndSwapInt32(&inFailOver, 0, 1) == false {
 		return
 	}
@@ -186,7 +170,6 @@ func failover() {
 	}
 
 	if handler != nil {
-
 		// Process failover
 		err := handler.Failover()
 
@@ -210,6 +193,7 @@ func failover() {
 		}
 	}
 }
+
 func errorExit() {
 	log.Error("Usage: crunchy-watch <platform> [flags]")
 	log.Error("Valid platform options are:")
