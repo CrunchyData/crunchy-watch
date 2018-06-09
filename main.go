@@ -121,12 +121,10 @@ func main() {
 	failures := 0
 
 	for {
-
 		if pause == false {
 			log.Infof("Health Checking: '%s'", config.GetString(Primary.EnvVar))
-			err := util.HealthCheck(target)
 
-			if err == nil {
+			if err := util.HealthCheck(target); err == nil {
 				log.Infof("Successfully reached '%s'", config.GetString(Primary.EnvVar))
 			} else {
 				failures += 1
@@ -147,7 +145,6 @@ func main() {
 			log.Info("Health Checking paused")
 		}
 		time.Sleep(config.GetDuration(HealthcheckInterval.EnvVar))
-
 	}
 }
 
