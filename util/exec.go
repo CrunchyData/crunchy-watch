@@ -19,13 +19,14 @@ import (
 	"bytes"
 	//	log "github.com/sirupsen/logrus"
 	"io"
+	"net/url"
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	"net/url"
-	"strings"
 )
 
 // ExecOptions passed to ExecWithOptions
@@ -44,7 +45,6 @@ type ExecOptions struct {
 }
 
 func ExecWithOptions(config *restclient.Config, client kubernetes.Clientset, options ExecOptions) (string, string, error) {
-
 	const tty = false
 
 	req := client.CoreV1().RESTClient().Post().
