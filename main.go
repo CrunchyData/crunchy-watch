@@ -102,8 +102,8 @@ func main() {
 	}
 
 	// Check that required flags/envs were set
-	findConfigOrFail(Primary, "Must specify a primary PostgreSQL instance.")
-	findConfigOrFail(Replica, "Must specify a replica PostgreSQL instance for failover.")
+	findConfigOrFail(Primary, "Must specify a primary PostgreSQL instance.", 17)
+	findConfigOrFail(Replica, "Must specify a replica PostgreSQL instance for failover.", 18)
 
 	timeout := config.GetDuration(Timeout.EnvVar)
 
