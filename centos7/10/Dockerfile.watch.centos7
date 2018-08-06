@@ -15,10 +15,10 @@ FROM centos:7
 
 LABEL Name="crunchydata/watch" \
 	Vendor="Crunchy Data Solutions" \
-	Version="7.3" \
+	Version="7.5" \
 	PostgresVersion="10" \
 	PostgresFullVersion="10.4" \
-	Release="2.0" \
+	Release="2.1.0" \
 	Url="https://crunchydata.com" \
 	Summary="" \
 	io.k8s.description="watch container" \

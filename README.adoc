@@ -1,5 +1,5 @@
 = Crunchy Watch
-v2.0, {docdate}
+Latest Release: 2.1.0 {docdate}
 
 image::docs/crunchy_logo.png?raw=true[]
 
@@ -322,13 +322,13 @@ variable which indicates which version of the container you will pull down and
 execute, for example:
 
 ....
-$> export CCP_IMAGE_TAG=centos7-10.4-2.0
+$> export CCP_IMAGE_TAG=centos7-10.4-2.1.0
 $> ./run.sh
 ....
 
 Or,
 
 ....
-$> CCP_IMAGE_TAG=centos7-10.4-2.0 ./run.sh
+$> CCP_IMAGE_TAG=centos7-10.4-2.1.0 ./run.sh
 ....
 
