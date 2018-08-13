@@ -48,30 +48,17 @@ type ReplicationInfo struct {
 
 func GetReplicationInfo(target string) (*ReplicationInfo, error) {
 	conn, err := sql.Open("postgres", target)
-
 	if err != nil {
 		log.Errorf("Could not connect to: %s", target)
 		return nil, err
 	}
-
 	defer conn.Close()
 
 	// Get PG version
-	var version int
-
-	rows, err := conn.Query("SELECT current_setting('server_version_num')")
-
-	if err != nil {
+	version := 0
+	if err := conn.QueryRow("SELECT current_setting('server_version_num')").Scan(&version); err != nil {
 		log.Errorf("Could not perform query for version: %s", target)
 		return nil, err
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		if err := rows.Scan(&version); err != nil {
-			return nil, err
-		}
 	}
 
 	// Get replication info
@@ -93,19 +80,9 @@ func GetReplicationInfo(target string) (*ReplicationInfo, error) {
 		)
 	}
 
-	rows, err = conn.Query(replicationInfoQuery)
-
-	if err != nil {
+	if err := conn.QueryRow(replicationInfoQuery).Scan(&recvLocation, &replayLocation); err != nil {
 		log.Errorf("Could not perform replication info query: %s", target)
 		return nil, err
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		if err := rows.Scan(&recvLocation, &replayLocation); err != nil {
-			return nil, err
-		}
 	}
 
 	return &ReplicationInfo{recvLocation, replayLocation}, nil

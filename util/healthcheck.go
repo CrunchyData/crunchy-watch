@@ -27,37 +27,33 @@ const DEFAULT_HEALTHCHECK_QUERY = "SELECT 1;"
 func HealthCheck(target string) error {
 	// Create connection to the datasource
 	conn, err := sql.Open("postgres", target)
-
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-
 	defer conn.Close()
 
 	// Check that the connection is alive
-	err = conn.Ping()
-	if err != nil {
+	if err = conn.Ping(); err != nil {
 		log.Error(err.Error())
 		return err
 	}
 
 	// Check that the connection can be queried
 	rows, err := conn.Query(DEFAULT_HEALTHCHECK_QUERY)
-
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-
 	defer rows.Close()
 
 	return nil
 }
-func DataDirectory(target string) (string, error) {
-	con, err := sql.Open("postgres", target)
 
+func DataDirectory(target string) (string, error) {
 	var dataDirectory string = ""
+
+	con, err := sql.Open("postgres", target)
 	if err != nil {
 		log.Error(err.Error())
 		return dataDirectory, err
@@ -65,13 +61,12 @@ func DataDirectory(target string) (string, error) {
 	defer con.Close()
 
 	rs, err := con.Query("show data_directory")
-
-	defer rs.Close()
-
 	if err != nil {
 		log.Error(err.Error())
 		return dataDirectory, err
 	}
+	defer rs.Close()
+
 	for rs.Next() {
 		err = rs.Scan(&dataDirectory)
 		if err != nil {
