@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-oc delete pod watch
+oc delete dc watch
 oc delete sa pg-watcher
 oc delete configmap watch-hooks-configmap
-../waitforterm.sh watch oc
