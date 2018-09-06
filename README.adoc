@@ -1,5 +1,5 @@
 = Crunchy Watch
-Latest Release: 2.1.0 {docdate}
+Latest Release: 2.1.1 {docdate}
 
 image::docs/crunchy_logo.png?raw=true[]
 
