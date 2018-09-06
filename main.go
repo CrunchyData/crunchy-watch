@@ -92,6 +92,13 @@ var (
 		Description: "database connect to",
 	}
 
+	TargetType = flags.FlagInfo{
+		Namespace:   "general",
+		Name:        "target-type",
+		EnvVar:      "CRUNCHY_WATCH_TARGET_TYPE",
+		Description: "target resource type",
+	}
+
 	Timeout = flags.FlagInfo{
 		Namespace:   "general",
 		Name:        "timeout",
@@ -166,6 +173,7 @@ func init() {
 	flags.Int(flagSet, PrimaryPort, 5432)
 	flags.String(flagSet, Replica, "")
 	flags.Int(flagSet, ReplicaPort, 5432)
+	flags.String(flagSet, TargetType, "pod")
 	flags.String(flagSet, Database, "postgres")
 	flags.String(flagSet, Username, "postgres")
 	flags.String(flagSet, Password, "")

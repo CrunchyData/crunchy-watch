@@ -1,0 +1,149 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "watchreplica",
+        "labels": {
+            "name": "watchreplica"
+        }
+    },
+    "spec": {
+        "ports": [{
+            "protocol": "TCP",
+            "port": 5432,
+            "targetPort": 5432,
+            "nodePort": 0
+        }],
+        "selector": {
+            "name": "watchreplica"
+        },
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+    }
+}
+
+{
+    "kind": "Deployment",
+    "apiVersion": "extensions/v1beta1",
+    "metadata": {
+        "name": "watchreplica",
+        "labels": {
+            "name": "watchreplica"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "template": {
+            "metadata": {
+                "labels": {
+                    "name": "watchreplica"
+                }
+            },
+            "spec": {
+                "containers": [{
+                    "name": "postgres",
+                    "image": "$CCP_IMAGE_PREFIX/crunchy-postgres:$CCP_IMAGE_TAG",
+                    "readinessProbe": {
+                        "exec": {
+                            "command": [
+                                "/opt/cpm/bin/readiness.sh"
+                            ]
+                        },
+                        "initialDelaySeconds": 40,
+                        "timeoutSeconds": 4
+                    },
+                    "env": [{
+                            "name": "PG_PRIMARY_PORT",
+                            "value": "5432"
+                        }, {
+                            "name": "PG_MODE",
+                            "value": "replica"
+                        }, {
+                            "name": "PG_PRIMARY_HOST",
+                            "value": "watchprimary"
+                        }, {
+                            "name": "PGHOST",
+                            "value": "/tmp"
+                        }, {
+                            "name": "PGDATA_PATH_OVERRIDE",
+                            "value": "watchreplica"
+                        }, {
+                            "name": "PG_USER",
+                            "value": "postgres"
+                        }, {
+                            "name": "PG_PASSWORD",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "PG_PASSWORD",
+                                    "name": "watchprimary-secret"
+                                }
+                            }
+                        }, {
+                            "name": "PG_PRIMARY_USER",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "PG_PRIMARY_USER",
+                                    "name": "watchprimary-secret"
+                                }
+                            }
+                        }, {
+                            "name": "PG_PRIMARY_PASSWORD",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "PG_PRIMARY_PASSWORD",
+                                    "name": "watchprimary-secret"
+                                }
+                            }
+                        }, {
+                            "name": "PG_ROOT_PASSWORD",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "PG_ROOT_PASSWORD",
+                                    "name": "watchprimary-secret"
+                                }
+                            }
+                        }, {
+                            "name": "PG_DATABASE",
+                            "valueFrom": {
+                                "secretKeyRef": {
+                                    "key": "PG_DATABASE",
+                                    "name": "watchprimary-secret"
+                                }
+                            }
+                        }
+                    ],
+                    "volumeMounts": [{
+                        "mountPath": "/pgdata",
+                        "name": "pgdata",
+                        "readOnly": false
+                    }],
+                    "ports": [{
+                        "containerPort": 5432,
+                        "protocol": "TCP"
+                    }],
+                    "resources": {},
+                    "imagePullPolicy": "IfNotPresent"
+                }],
+                "volumes": [{
+                    "name": "pgdata",
+                    "persistentVolumeClaim": {
+                        "claimName": "watchreplica-pgdata"
+                    }
+                }],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "securityContext": {
+                    $CCP_SECURITY_CONTEXT
+                }
+            }
+        },
+        "strategy": {
+            "type": "RollingUpdate",
+            "rollingUpdate": {
+                "maxUnavailable": 1,
+                "maxSurge": 1
+            }
+        }
+    }
+}

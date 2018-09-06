@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $DIR/cleanup.sh
 
+# Create 'watch-hooks-configmap'.
 $WATCH_CLI create configmap watch-hooks-configmap \
-		--from-file=./hooks/watch-pre-hook \
-		--from-file=./hooks/watch-post-hook
+	--from-file=./hooks/watch-pre-hook \
+	--from-file=./hooks/watch-post-hook
 
 expenv -f ../rbac.yaml | $WATCH_CLI create -f -
 
-expenv -f  $DIR/watch.json | $WATCH_CLI create -f -
+expenv -f $DIR/watch.json  | $WATCH_CLI create -f -
+

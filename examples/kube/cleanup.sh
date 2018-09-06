@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kubectl delete pod watch
-../waitforterm.sh watch kubectl
+$WATCH_CLI delete pod watch
 
-kubectl delete sa pg-watcher
+../waitforterm.sh watch $WATCH_CLI
 
-kubectl delete rolebinding pg-watcher-sa-edit
+source ../cleanup-rbac.sh
 
-kubectl delete configmap watch-hooks-configmap
+$WATCH_CLI delete configmap watch-hooks-configmap

@@ -31,32 +31,39 @@ import (
 type failoverHandler struct{}
 
 var (
-	KubeNamespace = flags.FlagInfo{
-		Namespace:   "kubernetes",
-		Name:        "kube-namespace",
-		EnvVar:      "CRUNCHY_WATCH_KUBE_NAMESPACE",
-		Description: "the kubernetes namespace",
+	OSProject = flags.FlagInfo{
+		Namespace:   "openshift",
+		Name:        "openshift-project",
+		EnvVar:      "CRUNCHY_WATCH_KUBE_PROJECT",
+		Description: "the openshift project",
 	}
 
-	KubeFailoverStrategy = flags.FlagInfo{
-		Namespace:   "kubernetes",
-		Name:        "kube-failover-strategy",
+	TargetType = flags.FlagInfo{
+		Namespace:   "openshift",
+		Name:        "openshift-target-type",
+		EnvVar:      "CRUNCHY_WATCH_TARGET_TYPE",
+		Description: "the openshift target type",
+	}
+
+	OSFailoverStrategy = flags.FlagInfo{
+		Namespace:   "openshift",
+		Name:        "openshift-failover-strategy",
 		EnvVar:      "CRUNCHY_WATCH_KUBE_FAILOVER_STRATEGY",
-		Description: "the kubernetes failover strategy",
+		Description: "the openshift failover strategy",
 	}
 )
 
-var client *kubernetes.Clientset
-var restConfig *rest.Config
-
-var failoverStrategies = []string{
+var failoverStrategy = []string{
 	"default",
 	"label",
 	"latest",
 }
 
+var client *kubernetes.Clientset
+var restConfig *rest.Config
+
 func getReplica() (string, error) {
-	switch config.GetString(KubeFailoverStrategy.EnvVar) {
+	switch config.GetString(OSFailoverStrategy.EnvVar) {
 	case "default":
 		return defaultStrategy()
 	case "label":
@@ -64,30 +71,36 @@ func getReplica() (string, error) {
 	case "latest":
 		return latestStrategy()
 	default:
-		return "", errors.New("invalid kubernetes failover strategy")
+		return "", errors.New("invalid openshift failover strategy")
 	}
 }
 
 func (h failoverHandler) Failover() error {
 	log.Infof("Processing Failover: Strategy - %s",
-		config.GetString(KubeFailoverStrategy.EnvVar))
+		config.GetString(OSFailoverStrategy.EnvVar))
 
 	// shoot the old primary in the head
 	log.Info("Deleting existing primary...")
-	err := deletePrimaryPod(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"),
-		config.GetString("CRUNCHY_WATCH_PRIMARY"))
+	var err error
+	if config.GetString(TargetType.EnvVar) == "deployment" {
+		log.Info("deleting deployment")
+		err = deletePrimaryDeployment(config.GetString(OSProject.EnvVar),
+			config.GetString("CRUNCHY_WATCH_PRIMARY"))
+	} else {
+		err = deletePrimaryPod(config.GetString(OSProject.EnvVar),
+			config.GetString("CRUNCHY_WATCH_PRIMARY"))
+	}
 
 	if err != nil {
 		if kerrors.IsNotFound(err) {
 			log.Warn(err.Error())
 		} else {
-			log.Error(err.Error())
+			log.Error(err)
 			log.Error("An error occurred while deleting the old primary")
 		}
 	}
 	log.Info("Deleted old primary ")
 
-	// Get the list of replicas available
 	log.Info("Choosing failover replica...")
 	replica, err := getReplica()
 
@@ -95,33 +108,41 @@ func (h failoverHandler) Failover() error {
 		log.Error("An error occurred while choosing the failover replica")
 		return err
 	}
+
 	log.Infof("Chose failover target (%s)", replica)
 
-	// Promote replica to be new primary.
 	log.Info("Promoting failover replica...")
-	err = promoteReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica)
+	err = promoteReplica(config.GetString(OSProject.EnvVar), replica)
 
 	if err != nil {
-
-		log.Error("An error occurred while promoting the failover replica")
+		log.Errorf("Cannot promote replica: %s", replica)
 		return err
 	}
 
-	// Change labels so that the replica becomes the new primary.
 	log.Info("Relabeling failover replica...")
-	err = relabelReplica(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), replica, config.GetString("CRUNCHY_WATCH_PRIMARY"))
+	if config.GetString(TargetType.EnvVar) == "deployment" {
+		log.Info("Draining and Relabeling failover deployment...")
+		err = drainDeployment(config.GetString(OSProject.EnvVar), config.GetString("CRUNCHY_WATCH_PRIMARY"), config.GetString("CRUNCHY_WATCH_REPLICA"))
+		if err != nil {
+			log.Errorf("Cannot drain replica: %s", replica)
+			return err
+		}
+	} else {
+		err = relabelReplica(config.GetString(OSProject.EnvVar), replica, config.GetString("CRUNCHY_WATCH_PRIMARY"))
 
-	if err != nil {
-		log.Error("An error occurred while relabeling the failover replica")
-		return err
+		if err != nil {
+			log.Errorf("Cannot relabel replica: %s", replica)
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (h failoverHandler) SetFlags(f *flag.FlagSet) {
-	flags.String(f, KubeNamespace, "default")
-	flags.String(f, KubeFailoverStrategy, "default")
+	flags.String(f, OSProject, "default")
+	flags.String(f, TargetType, "default")
+	flags.String(f, OSFailoverStrategy, "default")
 }
 
 func (h failoverHandler) Initialize() error {

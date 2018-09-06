@@ -1,6 +1,5 @@
 #!/bin/bash
-
-# Copyright 2016-2018 Crunchy Data Solutions, Inc.
+# Copyright 2017 - 2018 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,7 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-oc delete pod watch
-oc delete sa pg-watcher
-oc delete configmap watch-hooks-configmap
-../waitforterm.sh watch oc
+source $WATCH_ROOT/examples/common.sh
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+${DIR}/cleanup.sh
+
+sleep 8
+
+create_storage "watch-deployments"
+if [[ $? -ne 0 ]]
+then
+    echo_err "Failed to create storage, exiting.."
+    exit 1
+fi
+
+expenv -f $DIR/watchprimary.json | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -
+
+echo "sleeping 30 secs before starting replica"
+sleep 30
+
+expenv -f $DIR/watchreplica.json | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -

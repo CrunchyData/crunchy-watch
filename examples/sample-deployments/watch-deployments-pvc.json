@@ -1,0 +1,51 @@
+{
+    "kind": "PersistentVolumeClaim",
+    "apiVersion": "v1",
+    "metadata": {
+      "name": "watchprimary-pgdata",
+      "labels":  {
+      		"name": "watchprimary"
+      }
+    },
+    "spec": {
+      "selector": {
+        "matchLabels": {
+          "name": "watchprimary-pgdata"
+        }
+      },
+      "accessModes": [
+        "$CCP_STORAGE_MODE"
+      ],
+      "resources": {
+        "requests": {
+          "storage": "$CCP_STORAGE_CAPACITY"
+        }
+      }
+    }
+}
+
+{
+    "kind": "PersistentVolumeClaim",
+    "apiVersion": "v1",
+    "metadata": {
+      "name": "watchreplica-pgdata",
+      "labels":  {
+      		"name": "watchreplica"
+      }
+    },
+    "spec": {
+      "selector": {
+        "matchLabels": {
+          "name": "watchreplica-pgdata"
+        }
+      },
+      "accessModes": [
+        "$CCP_STORAGE_MODE"
+      ],
+      "resources": {
+        "requests": {
+          "storage": "$CCP_STORAGE_CAPACITY"
+        }
+      }
+    }
+}

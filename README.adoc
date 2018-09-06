@@ -200,9 +200,32 @@ export PATH=$PATH:$GOPATH/bin
 export CCP_BASEOS=centos7
 export CCP_PGVERSION=10
 export CCP_PG_FULLVERSION=10.5
+export WATCH_CLI=oc
+export WATCH_CLI=kubectl
+export WATCH_NAMESPACE=demo
+export WATCH_ROOT=$GOPATH/src/github.com/crunchydata/crunchy-watch
 cd $GOPATH/src/github.com/crunchydata
 git clone https://github.com/CrunchyData/crunchy-watch.git
 cd crunchy-watch
+....
+
+Configure storage for the Kube and Openshift examples by
+setting the following environment variables:
+
+For NFS:
+....
+export CCP_STORAGE_CAPACITY=400M
+export CCP_NFS_IP=192.168.122.212
+export CCP_STORAGE_MODE=ReadWriteMany
+export CCP_SECURITY_CONTEXT='"supplementalGroups": [65534]'
+export CCP_STORAGE_PATH=/nfsfileshare
+....
+
+For HostPath:
+....
+export CCP_STORAGE_CAPACITY=400M
+export CCP_STORAGE_MODE=ReadWriteMany
+export CCP_STORAGE_PATH=/data
 ....
 
 ==== Get Project Dependencies
@@ -314,21 +337,66 @@ $> CRUNCHY_WATCH_PRE_HOOK=/tmp/watch-pre-hook crunchy-watch kube
 
 == Examples
 
-Various examples are provided in the `examples` directory and described in the
-documentation.
+There are 2 primary examples for using crunchy-watch provided.  Both
+examples work for both Kubernetes and Openshift environments.  Setting
+the WATCH_CLI environment variable to *oc* for Openshift or *kubectl*
+for Kubernetes is required to run the examples.
 
-To run the examples, you will need to set the `CCP_IMAGE_TAG` environment
-variable which indicates which version of the container you will pull down and
-execute, for example:
+The first example has crunchy-watch watching 2 pods, a primary and
+a replica pod.  Failover is performed on the primary pod.  
 
+To run the pod example, first start up the sample pods:
 ....
-$> export CCP_IMAGE_TAG=centos7-10.5-2.1.0
-$> ./run.sh
-....
-
-Or,
-
-....
-$> CCP_IMAGE_TAG=centos7-10.5-2.1.0 ./run.sh
+cd examples/sample-pods
+./run.sh
 ....
 
+To run crunchy-watch for watching this set of pods, run:
+....
+cd examples/kube
+./run.sh
+....
+
+To trigger a failover of the primary Pod to the replica Pod
+enter the following:
+....
+$WATCH_CLI delete pod pr-primary
+$WATCH_CLI logs watch --follow
+....
+
+To clean up the example:
+....
+cd examples/sample-pods
+./cleanup.sh
+cd examples/kube
+./cleanup.sh
+....
+
+The 2nd example of crunchy-watch demonstrates failover of
+a Deployment.  The sample Deployments used in the example
+are started as follows:
+....
+cd examples/sample-deployments
+./run.sh
+....
+
+Run the crunchy-watch Deployment example as follows:
+....
+cd examples/kube-deployments
+./run.sh
+....
+
+To trigger a failover of the primary Deployment to the replica Deployment
+enter the following:
+....
+$WATCH_CLI delete deploy watchprimary
+$WATCH_CLI logs watch --follow
+....
+
+To clean up the example:
+....
+cd examples/sample-deployments
+./cleanup.sh
+cd examples/kube-deployments
+./cleanup.sh
+....

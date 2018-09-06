@@ -13,14 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source ../envvars.sh
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$WATCH_CLI delete sa pg-watcher
+$WATCH_CLI delete role pg-watcher-role
+$WATCH_CLI delete rolebinding pg-watcher-role-binding
 
-$DIR/cleanup.sh
-
-kubectl create configmap watch-hooks-configmap \
-		--from-file=./hooks/watch-pre-hook \
-		--from-file=./hooks/watch-post-hook
-
-envsubst < $DIR/legacy-watch-pod.json | kubectl create -f -

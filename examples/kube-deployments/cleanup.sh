@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # Copyright 2016-2018 Crunchy Data Solutions, Inc.
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# set up some env vars that all examples can relate to
-#
+$WATCH_CLI delete pod watch
 
-export LOCAL_IP=`hostname --ip-address`
+source ../cleanup-rbac.sh
 
-if [ -v $CCP_IMAGE_TAG ]; then
-	echo "CCP_IMAGE_TAG is not set."
-	exit 1
-fi
-
-# for PVC templates - NFS uses ReadWriteMany - EBS uses ReadWriteOnce
-
-# for templates - allow for override of Image Path Prefix
-export REPLACE_CCP_IMAGE_PREFIX=crunchydata
-export CCP_IMAGE_PREFIX=crunchydata
+$WATCH_CLI delete configmap watch-hooks-configmap
+../waitforterm.sh watch $WATCH_CLI

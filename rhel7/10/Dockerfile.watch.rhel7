@@ -49,7 +49,6 @@ RUN yum -y install  \
 	hostname \
 	postgresql10 \
 	postgresql10-libs \
-	atomic-openshift-clients \
  && yum clean all -y
 
 # Create postgres user and group

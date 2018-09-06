@@ -18,21 +18,33 @@ package main
 import (
 	"errors"
 	"fmt"
-
+	"github.com/crunchydata/crunchy-watch/util"
 	log "github.com/sirupsen/logrus"
 	config "github.com/spf13/viper"
-
-	"github.com/crunchydata/crunchy-watch/util"
 )
 
-/*
-	return the name of the first pod with the name=CRUNCHY_WATCH_REPLICA label
-*/
 func defaultStrategy() (string, error) {
 
 	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA")}
+	if config.GetString("CRUNCHY_WATCH_TARGET_TYPE") == "deployment" {
+		deploymentList, err := getDeployments(config.GetString(OSProject.EnvVar), nil, selectors)
 
-	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
+		if err != nil {
+			log.Error("Error getting deployments command")
+			return "", nil
+		}
+
+		// If not found then return an error
+		if len(deploymentList.Items) == 0 {
+			return "", errors.New("No deployments found")
+
+		}
+
+		dep := deploymentList.Items[0]
+		return dep.Name, nil
+	}
+
+	podList, err := getPods(config.GetString(OSProject.EnvVar), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
@@ -47,19 +59,31 @@ func defaultStrategy() (string, error) {
 
 	pod := podList.Items[0]
 	return pod.Name, nil
-
 }
 
-/*
-	return the name of the first pod named with CRUNCHY_WATCH_REPLICA
-	and replicatype trigger
-	if nothing is found then use the default strategy
-*/
 func labelStrategy() (string, error) {
 
 	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA"), "replicatype": "trigger"}
 
-	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
+	if config.GetString("CRUNCHY_WATCH_TARGET_TYPE") == "deployment" {
+		deploymentList, err := getDeployments(config.GetString(OSProject.EnvVar), nil, selectors)
+
+		if err != nil {
+			log.Error("Error getting deployments command")
+			return "", nil
+		}
+
+		// If no 'trigger' replicas were found, then fall back to the default strategy.
+		if len(deploymentList.Items) == 0 {
+			log.Info("No 'trigger' replica deployments were found, falling back to 'default' failover strategy")
+			return defaultStrategy()
+		}
+
+		deployment := deploymentList.Items[0]
+		return deployment.Name, nil
+	}
+
+	podList, err := getPods(config.GetString(OSProject.EnvVar), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
@@ -74,12 +98,14 @@ func labelStrategy() (string, error) {
 
 	pod := podList.Items[0]
 	return pod.Name, nil
+
 }
 
 func latestStrategy() (string, error) {
-	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA")}
+	var err error
 
-	podList, err := getPods(config.GetString("CRUNCHY_WATCH_KUBE_NAMESPACE"), nil, selectors)
+	selectors := map[string]string{"name": config.GetString("CRUNCHY_WATCH_REPLICA")}
+	podList, err := getPods(config.GetString(OSProject.EnvVar), nil, selectors)
 
 	if err != nil {
 		log.Error("Error getting pods command")
@@ -136,4 +162,5 @@ func latestStrategy() (string, error) {
 	}
 
 	return selectedReplica.Name, nil
+
 }
