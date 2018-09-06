@@ -172,7 +172,7 @@ sudo yum -y install gettext git golang
 ==== Setup Project Settings and Structure
 
 ....
-export GOPATH=$HOME/odev
+export GOPATH=$HOME/cdev
 export PATH=$PATH:$GOPATH/bin
 export CCP_IMAGE_PREFIX=crunchydata
 export CCP_BASEOS=centos7
@@ -188,6 +188,20 @@ export WATCH_ROOT=$GOPATH/src/github.com/crunchydata/crunchy-watch
 In the case of Openshift:
 ....
 export WATCH_CLI=oc
+....
+
+Create the demo namespace:
+....
+$ kubectl create -f $WATCH_ROOT/conf/demo-namespace.json
+namespace "demo" created
+$ kubectl get namespace demo
+NAME      STATUS    AGE
+demo      Active    7s
+....
+
+Then set the namespace as the current location to avoid using the wrong namespace:
+....
+$ kubectl config set-context $(kubectl config current-context) --namespace=demo
 ....
 
 Then, build the project structure as follows:
@@ -264,7 +278,7 @@ make docker-image
 	| resolves all build related dependencies
 | docker-image
 	| build docker image - *Note:* requires `CCP_BASEOS`, `CCP_PGVERSION`,
-	|`CCP_PG_FULLVERSION` and `CCP_VERSION` to be defined.
+	`CCP_PG_FULLVERSION` and `CCP_VERSION` to be defined.
 | setup
 	| downloads required tools and docker image related dependencies
 |===
@@ -351,11 +365,29 @@ $WATCH_CLI delete pod pr-primary
 $WATCH_CLI logs watch --follow
 ....
 
+To verify watch logs for the folowing:
+....
+ERRO[2018-09-06T13:38:50Z] Could not reach 'pr-primary' (Attempt: 1)
+INFO[2018-09-06T13:38:50Z] Executing pre-hook: /hooks/watch-pre-hook
+INFO[2018-09-06T13:38:50Z] Processing Failover: Strategy - latest
+INFO[2018-09-06T13:38:50Z] Deleting existing primary...
+INFO[2018-09-06T13:38:50Z] Deleted old primary
+INFO[2018-09-06T13:38:50Z] Choosing failover replica...
+INFO[2018-09-06T13:38:50Z] Chose failover target (pr-replica)
+INFO[2018-09-06T13:38:50Z] Promoting failover replica...
+DEBU[2018-09-06T13:38:50Z] executing cmd: [/opt/cpm/bin/promote.sh] on pod pr-replica in namespace demo container: postgres
+INFO[2018-09-06T13:38:50Z] Relabeling failover replica...
+DEBU[2018-09-06T13:38:50Z] label: name
+DEBU[2018-09-06T13:38:50Z] label: replicatype
+INFO[2018-09-06T13:38:50Z] Executing post-hook: /hooks/watch-post-hook
+INFO[2018-09-06T13:39:00Z] Health Checking: 'pr-primary'
+....
+
 To clean up the example:
 ....
-cd examples/sample-pods
+cd $WATCH_ROOT/examples/sample-pods
 ./cleanup.sh
-cd examples/kube
+cd $WATCH_ROOT/examples/kube
 ./cleanup.sh
 ....
 
@@ -363,13 +395,13 @@ The 2nd example of crunchy-watch demonstrates failover of
 a Deployment.  The sample Deployments used in the example
 are started as follows:
 ....
-cd examples/sample-deployments
+cd $WATCH_ROOT/examples/sample-deployments
 ./run.sh
 ....
 
 Run the crunchy-watch Deployment example as follows:
 ....
-cd examples/kube-deployments
+cd $WATCH_ROOT/examples/kube-deployments
 ./run.sh
 ....
 
@@ -380,10 +412,33 @@ $WATCH_CLI delete deploy watchprimary
 $WATCH_CLI logs watch --follow
 ....
 
+To verify watch the logs for:
+....
+INFO[2018-09-06T15:13:12Z] Health Checking: 'watchprimary'
+ERRO[2018-09-06T15:13:22Z] dial tcp 10.99.3.81:5432: i/o timeout
+ERRO[2018-09-06T15:13:22Z] Could not reach 'watchprimary' (Attempt: 1)
+INFO[2018-09-06T15:13:22Z] Executing pre-hook: /hooks/watch-pre-hook
+INFO[2018-09-06T15:13:22Z] Processing Failover: Strategy - latest
+INFO[2018-09-06T15:13:22Z] Deleting existing primary...
+INFO[2018-09-06T15:13:22Z] deleting deployment
+WARN[2018-09-06T15:13:22Z] deployments.extensions "watchprimary" not found
+INFO[2018-09-06T15:13:22Z] Deleted old primary
+INFO[2018-09-06T15:13:22Z] Choosing failover replica...
+INFO[2018-09-06T15:13:22Z] Chose failover target (watchreplica-56c48c7f4b-68fcb)
+INFO[2018-09-06T15:13:22Z] Promoting failover replica...
+DEBU[2018-09-06T15:13:22Z] executing cmd: [/opt/cpm/bin/promote.sh] on pod watchreplica-56c48c7f4b-68fcb in namespace demo container: postgres
+INFO[2018-09-06T15:13:22Z] Relabeling failover replica...
+.
+.
+.
+INFO[2018-09-06T15:14:28Z] Health Checking: 'watchprimary'
+INFO[2018-09-06T15:14:28Z] Successfully reached 'watchprimary'
+....
+
 To clean up the example:
 ....
-cd examples/sample-deployments
+cd $WATCH_ROOT/examples/sample-deployments
 ./cleanup.sh
-cd examples/kube-deployments
+cd $WATCH_ROOT/examples/kube-deployments
 ./cleanup.sh
 ....
