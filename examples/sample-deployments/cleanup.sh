@@ -15,17 +15,17 @@
 source $WATCH_ROOT/examples/common.sh
 echo_info "Cleaning up.."
 
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} deployment watchprimary watchreplica
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pod --selector=name=watchprimary
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pod --selector=name=watchreplica
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} secret watchprimary-secret
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} service watchprimary watchreplica
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pvc --selector=name=watchprimary
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pvc --selector=name=watchreplica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} deployment watchprimary watchreplica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pod --selector=name=watchprimary
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pod --selector=name=watchreplica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} secret watchprimary-secret
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} service watchprimary watchreplica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pvc --selector=name=watchprimary
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pvc --selector=name=watchreplica
 
 if [ -z "$CCP_STORAGE_CLASS" ]
 then
-  ${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pv watchprimary-pgdata watchreplica-pgdata 
+  ${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pv watchprimary-pgdata watchreplica-pgdata 
 fi
 
 dir_check_rm "watchprimary"

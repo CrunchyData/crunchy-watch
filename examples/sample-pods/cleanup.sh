@@ -15,12 +15,12 @@
 source ${WATCH_ROOT}/examples/common.sh
 echo_info "Cleaning up.."
 
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pod pr-replica
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pod pr-replica-2
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pod pr-replica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pod pr-replica-2
 sleep  2
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} service pr-replica
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} service pr-primary
-${CCP_CLI?} delete --namespace=${CCP_NAMESPACE?} pod pr-primary
-$CCPROOT/examples/waitforterm.sh pr-primary ${CCP_CLI?}
-$CCPROOT/examples/waitforterm.sh pr-replica ${CCP_CLI?}
-$CCPROOT/examples/waitforterm.sh pr-replica-2 ${CCP_CLI?}
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} service pr-replica
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} service pr-primary
+${WATCH_CLI?} delete --namespace=${WATCH_NAMESPACE?} pod pr-primary
+$WATCH_ROOT/examples/waitforterm.sh pr-primary ${WATCH_CLI?}
+$WATCH_ROOT/examples/waitforterm.sh pr-replica ${WATCH_CLI?}
+$WATCH_ROOT/examples/waitforterm.sh pr-replica-2 ${WATCH_CLI?}

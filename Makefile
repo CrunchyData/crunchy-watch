@@ -18,7 +18,7 @@ clean:
 
 resolve:
 	@echo "Resolving dependencies..."
-	@glide install
+	@dep ensure
 
 build:
 	@echo "Building crunchy-watch..."
@@ -26,7 +26,7 @@ build:
 		-ldflags='-s -w' \
 		$(PROJECT_DIR)/*.go
 
-modules: kube-module openshift-module
+modules: kube-module 
 
 kube-module:
 	@echo "Building Kubernetes module..."
@@ -34,13 +34,6 @@ kube-module:
 		-o $(BUILD_DIR)/plugins/kube.so \
 		-ldflags='-s -w' \
 		plugins/kube/*.go
-
-openshift-module:
-	@echo "Building OpenShift module..."
-	@go build -buildmode=plugin \
-		-o $(BUILD_DIR)/plugins/openshift.so \
-		-ldflags='-s -w' \
-		plugins/openshift/*.go
 
 docker-image:
 	@echo "Building docker image..."

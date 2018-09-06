@@ -27,9 +27,9 @@ then
     exit 1
 fi
 
-expenv -f $DIR/watchprimary.json | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -
+expenv -f $DIR/watchprimary.json | ${WATCH_CLI?} create --namespace=${WATCH_NAMESPACE?} -f -
 
 echo "sleeping 30 secs before starting replica"
 sleep 30
 
-expenv -f $DIR/watchreplica.json | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -
+expenv -f $DIR/watchreplica.json | ${WATCH_CLI?} create --namespace=${WATCH_NAMESPACE?} -f -

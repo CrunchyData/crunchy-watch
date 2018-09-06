@@ -39,7 +39,6 @@ Supported Platforms:
 |===
 | Name       | Value
 | Kubernetes | kube
-| Openshift  | openshift
 |===
 
 *Example:*
@@ -136,36 +135,16 @@ below.
 	| the kubernetes failover strategy
 |===
 
-==== Openshift
-
-[options="header"]
-|===
-| Option | Environment Variable | Default | Description
-| --openshift-project
-	| CRUNCHY_WATCH_OPENSHIFT_PROJECT
-	| default
-	| the openshift project (namespace)
-| --openshift-failover-strategy
-	| CRUNCHY_WATCH_OPENSHIFT_FAILOVER_STRATEGY
-	| default
-	| the openshift failover strategy
-|===
 
 == Build
 
 Building `crunchy-watch`, supporting plugin modules and docker image are
 accomplished using `make` and the provide Makefile.
 
-=== Requirements
+=== Requirements for Building from Source
 
- * Go 1.9 or greater
+ * Go 1.10 or greater
  * Docker 1.12 or greater
- * Kubernetes client (kubectl) 1.7 or greater
- * https://www.openshift.org/download.html[Openshift client (oc) 3.6] or greater
- * https://github.com/Masterminds/glide[Glide 0.12] or greater
-
-*Note:* The `$> make setup` target (below) will retrieve the requisite kubernetes and
-openshift client binaries.
 
 === Centos Build Steps
 
@@ -194,19 +173,31 @@ sudo yum -y install gettext git golang
 
 ....
 export GOPATH=$HOME/odev
-mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg
-mkdir -p $GOPATH/src/github.com/crunchydata/
 export PATH=$PATH:$GOPATH/bin
+export CCP_IMAGE_PREFIX=crunchydata
 export CCP_BASEOS=centos7
 export CCP_PGVERSION=10
 export CCP_PG_FULLVERSION=10.5
-export WATCH_CLI=oc
+export CCP_VERSION=2.1.0
+export CCP_IMAGE_TAG=$CCP_BASEOS-$CCP_PG_FULLVERSION-$CCP_VERSION
 export WATCH_CLI=kubectl
 export WATCH_NAMESPACE=demo
 export WATCH_ROOT=$GOPATH/src/github.com/crunchydata/crunchy-watch
+....
+
+In the case of Openshift:
+....
+export WATCH_CLI=oc
+....
+
+Then, build the project structure as follows:
+....
+mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg
+mkdir -p $GOPATH/src/github.com/crunchydata/
 cd $GOPATH/src/github.com/crunchydata
 git clone https://github.com/CrunchyData/crunchy-watch.git
 cd crunchy-watch
+git checkout master
 ....
 
 Configure storage for the Kube and Openshift examples by
@@ -231,8 +222,6 @@ export CCP_STORAGE_PATH=/data
 ==== Get Project Dependencies
 
 ....
-go get github.com/Masterminds/glide
-glide update
 make setup
 ....
 
@@ -269,8 +258,6 @@ make docker-image
 	| builds all plugin modules
 | kube-module
 	| builds kubernetes plugin module
-| openshift-module
-	| builds openshift plugin module
 | clean
 	| cleans all build related artifacts, including dependencies.
 | resolve

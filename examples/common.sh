@@ -71,11 +71,11 @@ function create_storage {
 
     if [[ -f ${DIR?}/${PV:-none} ]]
     then
-       expenv -f ${DIR?}/${PV?} | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -
+       expenv -f ${DIR?}/${PV?} | ${WATCH_CLI?} create --namespace=${WATCH_NAMESPACE?} -f -
     fi
 
     if [[ -f ${DIR?}/${PVC?} ]]
     then
-       expenv -f ${DIR?}/${PVC?} | ${CCP_CLI?} create --namespace=${CCP_NAMESPACE?} -f -
+       expenv -f ${DIR?}/${PVC?} | ${WATCH_CLI?} create --namespace=${WATCH_NAMESPACE?} -f -
     fi
 }
