@@ -190,20 +190,6 @@ In the case of Openshift:
 export WATCH_CLI=oc
 ....
 
-Create the demo namespace:
-....
-$ kubectl create -f $WATCH_ROOT/conf/demo-namespace.json
-namespace "demo" created
-$ kubectl get namespace demo
-NAME      STATUS    AGE
-demo      Active    7s
-....
-
-Then set the namespace as the current location to avoid using the wrong namespace:
-....
-$ kubectl config set-context $(kubectl config current-context) --namespace=demo
-....
-
 Then, build the project structure as follows:
 ....
 mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg
@@ -231,6 +217,20 @@ For HostPath:
 export CCP_STORAGE_CAPACITY=400M
 export CCP_STORAGE_MODE=ReadWriteMany
 export CCP_STORAGE_PATH=/data
+....
+
+Create the demo namespace:
+....
+$ kubectl create -f $WATCH_ROOT/conf/demo-namespace.json
+namespace "demo" created
+$ kubectl get namespace demo
+NAME      STATUS    AGE
+demo      Active    7s
+....
+
+Then set the namespace as the current location to avoid using the wrong namespace:
+....
+$ kubectl config set-context $(kubectl config current-context) --namespace=demo
 ....
 
 ==== Get Project Dependencies
