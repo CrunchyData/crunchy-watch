@@ -126,7 +126,7 @@ below.
 |===
 | Name | Environment Variable | Default | Description
 | --kube-namespace
-	| CRUNCHY_WATCH_KUBE_NAMESPACE
+	| CRUNCHY_WATCH_KUBE_PROJECT
 	| default
 	| the kubernetes namespace
 | --kube-failover-strategy
