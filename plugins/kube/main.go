@@ -83,7 +83,7 @@ func (h failoverHandler) Failover() error {
 	log.Info("Deleting existing primary...")
 	var err error
 	if config.GetString(TargetType.EnvVar) == "deployment" {
-		log.Info("deleting deployment")
+		log.Info("deleting deployment in namespace " + config.GetString(OSProject.EnvVar))
 		err = deletePrimaryDeployment(config.GetString(OSProject.EnvVar),
 			config.GetString("CRUNCHY_WATCH_PRIMARY"))
 	} else {

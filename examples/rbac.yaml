@@ -13,9 +13,15 @@ metadata:
   name: pg-watcher-role
   namespace: $WATCH_NAMESPACE
 rules:
+- apiGroups: ["extensions","apps"]
+  resources: ["deployments"]
+  verbs: ["*"]
 - apiGroups: [""]
-  resources: ["deployments","pods"]
-  verbs: ["get","watch","list","update","patch","delete"]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
 
 ---
 

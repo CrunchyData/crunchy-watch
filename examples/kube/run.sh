@@ -17,10 +17,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $DIR/cleanup.sh
 
-$WATCH_CLI create configmap watch-hooks-configmap \
+$WATCH_CLI -n $WATCH_NAMESPACE create configmap watch-hooks-configmap \
 		--from-file=./hooks/watch-pre-hook \
 		--from-file=./hooks/watch-post-hook
 
-expenv -f ../rbac.yaml | $WATCH_CLI create -f -
+expenv -f ../rbac.yaml | $WATCH_CLI -n $WATCH_NAMESPACE create -f -
 
-expenv -f  $DIR/watch.json | $WATCH_CLI create -f -
+expenv -f  $DIR/watch.json | $WATCH_CLI -n $WATCH_NAMESPACE create -f -
