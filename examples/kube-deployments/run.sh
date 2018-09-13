@@ -19,6 +19,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 $DIR/cleanup.sh
 
+[ -z "$WATCH_NAMESPACE" ] && echo "Need to set WATCH_NAMESPACE" && exit 1
+[ -z "$WATCH_IMAGE_TAG" ] && echo "Need to set WATCH_IMAGE_TAG" && exit 1
+[ -z "$WATCH_IMAGE_PREFIX" ] && echo "Need to set WATCH_IMAGE_PREFIX" && exit 1
+
 # Create 'watch-hooks-configmap'.
 $WATCH_CLI -n $WATCH_NAMESPACE create configmap watch-hooks-configmap \
 	--from-file=./hooks/watch-pre-hook \

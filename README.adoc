@@ -183,6 +183,8 @@ export CCP_IMAGE_TAG=$CCP_BASEOS-$CCP_PG_FULLVERSION-$CCP_VERSION
 export WATCH_CLI=kubectl
 export WATCH_NAMESPACE=demo
 export WATCH_ROOT=$GOPATH/src/github.com/crunchydata/crunchy-watch
+export WATCH_IMAGE_PREFIX=crunchydata
+export WATCH_IMAGE_TAG=centos7-2.1.1
 ....
 
 In the case of Openshift:
