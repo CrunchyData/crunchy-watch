@@ -88,6 +88,10 @@ below.
 	| CRUNCHY_WATCH_DATABASE
 	| postgres
 	| database to connect
+| --target-type
+        | CRUNCHY_WATCH_TARGET_TYPE
+        | pod
+        | Failover tatget type can be POD or Deployment
 | --timeout
 	| CRUNCHY_WATCH_TIMEOUT
 	| 10s
