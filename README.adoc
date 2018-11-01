@@ -23,7 +23,7 @@ You can also run Crunchy Watch outside of a container as a binary.
 
 Crunchy provides a commercially supported version of this container built upon
 RHEL 7 and the Crunchy supported PostgreSQL.  Contact Crunchy for more details
-at link:http://www.crunchydata.com.
+at link:https://www.crunchydata.com.
 
 
 == Usage
