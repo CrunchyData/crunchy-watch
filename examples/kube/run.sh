@@ -27,4 +27,9 @@ $WATCH_CLI -n $WATCH_NAMESPACE create configmap watch-hooks-configmap \
 
 expenv -f ../rbac.yaml | $WATCH_CLI -n $WATCH_NAMESPACE create -f -
 
+if [[ ${WATCH_CLI} -eq "oc" ]]
+then
+	oc adm policy add-scc-to-user privileged -z pg-watcher -n $WATCH_NAMESPACE
+fi
+
 expenv -f  $DIR/watch.json | $WATCH_CLI -n $WATCH_NAMESPACE create -f -

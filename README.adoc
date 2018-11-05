@@ -17,7 +17,7 @@ provided including:
  * trigger a failover on a replica that is further ahead than others
 
 Crunchy Watch is packaged into a Docker container which can execute in a pure
-Docker 1.12, Kubernetes 1.7, and Openshift 3.6 environments.
+Docker 1.12, Kubernetes 1.9, and Openshift 3.11 environments.
 
 You can also run Crunchy Watch outside of a container as a binary.
 
@@ -448,3 +448,8 @@ cd $WATCH_ROOT/examples/sample-deployments
 cd $WATCH_ROOT/examples/kube-deployments
 ./cleanup.sh
 ....
+
+The examples on Openshift require the pg-watcher Service Account to 
+have special priviledges, see the run.sh script for the 'oc adm' commands
+required to grant those priviledges.  Customize this priviledge for your
+local requirements.  
