@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-$WATCH_CLI delete sa pg-watcher
-$WATCH_CLI delete role pg-watcher-role
-$WATCH_CLI delete rolebinding pg-watcher-role-binding
+$WATCH_CLI delete sa pg-watcher -n $WATCH_NAMESPACE
+$WATCH_CLI delete role pg-watcher-role -n $WATCH_NAMESPACE
+$WATCH_CLI delete rolebinding pg-watcher-role-binding -n $WATCH_NAMESPACE
 

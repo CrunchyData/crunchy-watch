@@ -13,8 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$WATCH_CLI -n $WATCH_NAMESPACE delete pod watch
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-../waitforterm.sh watch $WATCH_CLI
+$DIR/cleanup-rbac.sh
 
-$WATCH_CLI -n $WATCH_NAMESPACE delete configmap watch-hooks-configmap
+[ -z "$WATCH_NAMESPACE" ] && echo "Need to set WATCH_NAMESPACE" && exit 1
+[ -z "$WATCH_IMAGE_TAG" ] && echo "Need to set WATCH_IMAGE_TAG" && exit 1
+[ -z "$WATCH_IMAGE_PREFIX" ] && echo "Need to set WATCH_IMAGE_PREFIX" && exit 1
+
+expenv -f $DIR/rbac.yaml | $WATCH_CLI -n $WATCH_NAMESPACE create -f -
+
+if [[ ${WATCH_CLI} -eq "oc" ]]
+then
+	oc adm policy add-scc-to-user privileged -z pg-watcher -n $WATCH_NAMESPACE
+fi
+
