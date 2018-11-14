@@ -17,13 +17,13 @@ provided including:
  * trigger a failover on a replica that is further ahead than others
 
 Crunchy Watch is packaged into a Docker container which can execute in a pure
-Docker 1.12, Kubernetes 1.7, and Openshift 3.6 environments.
+Docker 1.12, Kubernetes 1.9, and Openshift 3.11 environments.
 
 You can also run Crunchy Watch outside of a container as a binary.
 
 Crunchy provides a commercially supported version of this container built upon
 RHEL 7 and the Crunchy supported PostgreSQL.  Contact Crunchy for more details
-at link:http://www.crunchydata.com.
+at link:https://www.crunchydata.com.
 
 
 == Usage
@@ -344,6 +344,19 @@ $> CRUNCHY_WATCH_PRE_HOOK=/tmp/watch-pre-hook crunchy-watch kube
 
 == Examples
 
+Crunchy-watch depends on an RBAC policy to be setup for the
+service account it uses.  As a cluster-admin, you will need
+to run the examples/run-rbac.sh script a single time to create
+the necessary service account with the correct RBAC roles.
+
+....
+. /home/some-normal-user/.bashrc
+export PATH=$PATH:/home/some-normal-user/cdev/bin
+./run-rbac.sh
+....
+
+Then as a normal user account, you can run the crunchy watch examples.
+
 There are 2 primary examples for using crunchy-watch provided.  Both
 examples work for both Kubernetes and Openshift environments.  Setting
 the WATCH_CLI environment variable to *oc* for Openshift or *kubectl*
@@ -448,3 +461,8 @@ cd $WATCH_ROOT/examples/sample-deployments
 cd $WATCH_ROOT/examples/kube-deployments
 ./cleanup.sh
 ....
+
+The examples on Openshift require the pg-watcher Service Account to 
+have special priviledges, see the run.sh script for the 'oc adm' commands
+required to grant those priviledges.  Customize this priviledge for your
+local requirements.  
