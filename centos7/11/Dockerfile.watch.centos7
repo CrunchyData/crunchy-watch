@@ -15,9 +15,9 @@ FROM centos:7
 
 LABEL Name="crunchydata/watch" \
 	Vendor="Crunchy Data Solutions" \
-	Version="7.5" \
+	Version="7.6" \
 	PostgresVersion="11" \
-	PostgresFullVersion="11.0" \
+	PostgresFullVersion="11.1" \
 	Release="2.2.0" \
 	Url="https://crunchydata.com" \
 	Summary="" \
