@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$WATCH_CLI delete pod watch
+$WATCH_CLI -n $WATCH_NAMESPACE delete pod watch
 
 source ../cleanup-rbac.sh
 
-$WATCH_CLI delete configmap watch-hooks-configmap
+$WATCH_CLI -n $WATCH_NAMESPACE delete configmap watch-hooks-configmap
 ../waitforterm.sh watch $WATCH_CLI
