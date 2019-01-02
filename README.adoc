@@ -5,6 +5,9 @@ image::docs/crunchy_logo.png?raw=true[]
 
 == Overview
 
+Crunchy Watch is deprecated starting in January 2019.  For Kube/Openshift
+HA/failover we recommend the Crunchy Postgres Operator project (https://github.com/crunchydata/postgres-operator.git).
+
 Crunchy Watch is an application that watches a PostgreSQL master
 and looks for a failure, at which point it will perform
 a failover scenario.
